@@ -1,4 +1,5 @@
-import traverse from '@babel/traverse';
+import _traverse from '@babel/traverse';
+const traverse = _traverse.default || _traverse;
 const RULE_NAME = 'browser-api-in-useeffect';
 const BROWSER_APIS = ['window', 'localStorage', 'sessionStorage', 'document'];
 export function browserApiInUseEffect(ast, _code) {

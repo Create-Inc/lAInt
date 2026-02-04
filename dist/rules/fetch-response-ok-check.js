@@ -1,4 +1,5 @@
-import traverse from '@babel/traverse';
+import _traverse from '@babel/traverse';
+const traverse = _traverse.default || _traverse;
 const RULE_NAME = 'fetch-response-ok-check';
 export function fetchResponseOkCheck(ast, _code) {
     const results = [];

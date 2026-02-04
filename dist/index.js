@@ -1,5 +1,5 @@
-import { parseJsx } from './parser';
-import { rules } from './rules';
+import { parseJsx } from './parser.js';
+import { rules } from './rules/index.js';
 /**
  * Get all available rule names
  */

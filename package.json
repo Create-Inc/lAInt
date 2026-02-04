@@ -1,6 +1,6 @@
 {
   "name": "laint",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "AI Agent Lint Rules SDK - programmatic JSX/TSX linting for AI code generation",
   "main": "dist/index.js",
@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/fix-esm-imports.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "npm run build && npm test"

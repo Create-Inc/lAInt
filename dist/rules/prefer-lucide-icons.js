@@ -1,4 +1,5 @@
-import traverse from '@babel/traverse';
+import _traverse from '@babel/traverse';
+const traverse = _traverse.default || _traverse;
 const RULE_NAME = 'prefer-lucide-icons';
 // Common icon libraries that should be replaced with lucide
 const DISCOURAGED_ICON_PACKAGES = [
