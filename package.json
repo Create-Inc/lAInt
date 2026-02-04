@@ -1,14 +1,31 @@
 {
   "name": "laint",
   "version": "0.1.0",
-  "description": "AI Agent Lint Rules SDK",
+  "description": "AI Agent Lint Rules SDK - programmatic JSX/TSX linting for AI code generation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build && npm test"
   },
+  "keywords": [
+    "lint",
+    "linter",
+    "jsx",
+    "tsx",
+    "react",
+    "react-native",
+    "expo",
+    "ai",
+    "code-generation",
+    "ast"
+  ],
+  "license": "MIT",
   "dependencies": {
     "@babel/parser": "^7.24.0",
     "@babel/traverse": "^7.24.0"
