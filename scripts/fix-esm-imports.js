@@ -14,30 +14,34 @@ async function fixImportsInFile(filePath) {
   if (content.includes("import traverse from '@babel/traverse'")) {
     content = content.replace(
       "import traverse from '@babel/traverse';",
-      "import _traverse from '@babel/traverse';\nconst traverse = _traverse.default || _traverse;"
+      "import _traverse from '@babel/traverse';\nconst traverse = _traverse.default || _traverse;",
     );
     modified = true;
   }
 
   // Add .js extension to relative imports that don't have one
   // Matches: from './foo' or from '../foo' (but not from './foo.js')
-  const fixed = await replaceAsync(content, /from ['"](\.[^'"]+)['"]/g, async (match, importPath) => {
-    // Don't modify if already ends with .js
-    if (importPath.endsWith('.js')) return match;
+  const fixed = await replaceAsync(
+    content,
+    /from ['"](\.[^'"]+)['"]/g,
+    async (match, importPath) => {
+      // Don't modify if already ends with .js
+      if (importPath.endsWith('.js')) return match;
 
-    // Check if it's a directory import (needs /index.js)
-    const resolvedPath = join(fileDir, importPath);
-    try {
-      const stats = await stat(resolvedPath);
-      if (stats.isDirectory()) {
-        return `from '${importPath}/index.js'`;
+      // Check if it's a directory import (needs /index.js)
+      const resolvedPath = join(fileDir, importPath);
+      try {
+        const stats = await stat(resolvedPath);
+        if (stats.isDirectory()) {
+          return `from '${importPath}/index.js'`;
+        }
+      } catch {
+        // Not a directory, just add .js
       }
-    } catch {
-      // Not a directory, just add .js
-    }
 
-    return `from '${importPath}.js'`;
-  });
+      return `from '${importPath}.js'`;
+    },
+  );
 
   const originalContent = await readFile(filePath, 'utf-8');
   if (originalContent !== fixed) {

@@ -171,7 +171,7 @@ router.navigate('./profile');`;
     });
 
     it('should not warn on template literal paths', () => {
-      const code = "router.navigate(`/${userId}`);";
+      const code = 'router.navigate(`/${userId}`);';
       const results = lintJsxCode(code, config);
       expect(results).toHaveLength(0);
     });

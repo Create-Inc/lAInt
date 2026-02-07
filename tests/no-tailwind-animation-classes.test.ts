@@ -26,7 +26,7 @@ describe('no-tailwind-animation-classes rule', () => {
   });
 
   it('should detect in template literal', () => {
-    const code = "<div className={`flex animate-ping`} />";
+    const code = '<div className={`flex animate-ping`} />';
     const results = lintJsxCode(code, config);
     expect(results).toHaveLength(1);
   });

@@ -30,10 +30,7 @@ export function glassNeedsFallback(ast: File, _code: string): LintResult[] {
       const { callee } = path.node;
 
       // Check for isLiquidGlassAvailable() call
-      if (
-        callee.type === 'Identifier' &&
-        callee.name === 'isLiquidGlassAvailable'
-      ) {
+      if (callee.type === 'Identifier' && callee.name === 'isLiquidGlassAvailable') {
         hasLiquidGlassCheck = true;
       }
     },

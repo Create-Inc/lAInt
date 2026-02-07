@@ -159,8 +159,7 @@ function isComplexExpression(node: any): boolean {
   // IIFE is complex
   if (
     node.type === 'CallExpression' &&
-    (node.callee.type === 'ArrowFunctionExpression' ||
-      node.callee.type === 'FunctionExpression')
+    (node.callee.type === 'ArrowFunctionExpression' || node.callee.type === 'FunctionExpression')
   ) {
     return true;
   }

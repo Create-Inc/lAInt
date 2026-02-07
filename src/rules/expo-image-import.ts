@@ -21,8 +21,7 @@ export function expoImageImport(ast: File, _code: string): LintResult[] {
           ) {
             results.push({
               rule: RULE_NAME,
-              message:
-                "Import Image from 'expo-image' instead of 'react-native' for Expo apps",
+              message: "Import Image from 'expo-image' instead of 'react-native' for Expo apps",
               line: loc?.start.line ?? 0,
               column: loc?.start.column ?? 0,
               severity: 'warning',

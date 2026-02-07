@@ -15,18 +15,14 @@ export function noClassComponents(ast: File, _code: string): LintResult[] {
       let isReactComponent = false;
 
       if (superClass?.type === 'Identifier') {
-        isReactComponent = ['Component', 'PureComponent'].includes(
-          superClass.name
-        );
+        isReactComponent = ['Component', 'PureComponent'].includes(superClass.name);
       } else if (
         superClass?.type === 'MemberExpression' &&
         superClass.object.type === 'Identifier' &&
         superClass.object.name === 'React' &&
         superClass.property.type === 'Identifier'
       ) {
-        isReactComponent = ['Component', 'PureComponent'].includes(
-          superClass.property.name
-        );
+        isReactComponent = ['Component', 'PureComponent'].includes(superClass.property.name);
       }
 
       if (isReactComponent) {
