@@ -41,7 +41,7 @@ const results = lintJsxCode(code, {
   exclude: true
 });
 
-// Run all 26 rules
+// Run all 31 rules
 const allResults = lintJsxCode(code, {
   rules: [],
   exclude: true
@@ -51,7 +51,7 @@ const allResults = lintJsxCode(code, {
 const ruleNames = getAllRuleNames(); // ['no-relative-paths', 'expo-image-import', ...]
 ```
 
-## Available Rules (26 total)
+## Available Rules (31 total)
 
 ### Expo Router Rules
 
@@ -93,6 +93,16 @@ const ruleNames = getAllRuleNames(); // ['no-relative-paths', 'expo-image-import
 | `browser-api-in-useeffect` | warning | window/localStorage only in useEffect for SSR |
 | `fetch-response-ok-check` | warning | Check response.ok when using fetch |
 | `no-complex-jsx-expressions` | warning | Avoid IIFEs and complex expressions in JSX |
+
+### Screen Transitions Rules (react-native-screen-transitions)
+
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `transition-worklet-directive` | error | screenStyleInterpolator functions must include "worklet" directive |
+| `transition-progress-range` | warning | interpolate() should cover full [0, 1, 2] range including exit phase |
+| `transition-gesture-scrollview` | warning | Use Transition.ScrollView/FlatList instead of regular versions |
+| `transition-shared-tag-mismatch` | warning | sharedBoundTag on Transition.Pressable must have matching Transition.View |
+| `transition-prefer-blank-stack` | warning | Use Blank Stack instead of enableTransitions on Native Stack |
 
 ### Tailwind CSS Rules
 
@@ -226,6 +236,78 @@ const computedValue = compute();
 <div className="spinner" />
 ```
 
+### `transition-worklet-directive`
+```jsx
+// Bad - missing worklet directive
+const options = {
+  screenStyleInterpolator: (progress) => {
+    return { opacity: progress };
+  },
+};
+
+// Good
+const options = {
+  screenStyleInterpolator: (progress) => {
+    "worklet";
+    return { opacity: progress };
+  },
+};
+```
+
+### `transition-progress-range`
+```jsx
+// Bad - only covers [0, 1], missing exit phase
+screenStyleInterpolator: (progress) => {
+  "worklet";
+  const opacity = interpolate(progress, [0, 1], [0, 1]);
+  return { opacity };
+};
+
+// Good - covers full [0, 1, 2] range
+screenStyleInterpolator: (progress) => {
+  "worklet";
+  const opacity = interpolate(progress, [0, 1, 2], [0, 1, 0]);
+  return { opacity };
+};
+```
+
+### `transition-gesture-scrollview`
+```jsx
+// Bad - regular ScrollView conflicts with transition gestures
+import { Transition } from 'react-native-screen-transitions';
+import { ScrollView } from 'react-native';
+<ScrollView>...</ScrollView>
+
+// Good
+import { Transition } from 'react-native-screen-transitions';
+<Transition.ScrollView>...</Transition.ScrollView>
+```
+
+### `transition-shared-tag-mismatch`
+```jsx
+// Bad - Pressable tag has no matching View
+<Transition.Pressable sharedBoundTag="hero">
+  <Image source={img} />
+</Transition.Pressable>
+
+// Good - matching tags on both components
+<Transition.Pressable sharedBoundTag="hero">
+  <Image source={img} />
+</Transition.Pressable>
+<Transition.View sharedBoundTag="hero">
+  <Image source={img} />
+</Transition.View>
+```
+
+### `transition-prefer-blank-stack`
+```jsx
+// Bad - enableTransitions on Native Stack has edge cases
+<Stack.Screen options={{ enableTransitions: true }} />
+
+// Good - use Blank Stack from react-native-screen-transitions
+import { BlankStack } from 'react-native-screen-transitions';
+```
+
 ### `sql-no-nested-calls`
 ```typescript
 // Bad - nested sql causes issues
@@ -299,6 +381,6 @@ Returns an array of all available rule names.
 
 ```bash
 npm install     # Install dependencies
-npm test        # Run tests (169 tests)
+npm test        # Run tests (196 tests)
 npm run build   # Build TypeScript
 ```
