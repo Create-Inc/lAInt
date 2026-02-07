@@ -8,10 +8,7 @@ export function fetchResponseOkCheck(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];
 
   // Track fetch calls and whether they have .ok checks
-  const fetchCalls: Map<
-    string,
-    { line: number; column: number; hasOkCheck: boolean }
-  > = new Map();
+  const fetchCalls: Map<string, { line: number; column: number; hasOkCheck: boolean }> = new Map();
 
   traverse(ast, {
     // Find fetch() calls
@@ -20,7 +17,7 @@ export function fetchResponseOkCheck(ast: File, _code: string): LintResult[] {
 
       if (callee.type === 'Identifier' && callee.name === 'fetch') {
         // Generate a unique key based on location
-        const key = `${loc?.start.line}:${loc?.start.column}`;
+        const key = `${String(loc?.start.line)}:${String(loc?.start.column)}`;
         fetchCalls.set(key, {
           line: loc?.start.line ?? 0,
           column: loc?.start.column ?? 0,

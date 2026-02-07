@@ -10,9 +10,7 @@ interface TagInfo {
   column: number;
 }
 
-function getTransitionComponent(
-  name: any
-): 'Pressable' | 'View' | null {
+function getTransitionComponent(name: any): 'Pressable' | 'View' | null {
   if (
     name.type === 'JSXMemberExpression' &&
     name.object.type === 'JSXIdentifier' &&
@@ -24,10 +22,7 @@ function getTransitionComponent(
   return null;
 }
 
-export function transitionSharedTagMismatch(
-  ast: File,
-  _code: string
-): LintResult[] {
+export function transitionSharedTagMismatch(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];
 
   const pressableTags: TagInfo[] = [];

@@ -13,7 +13,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "npm run build && npm test",
-    "knip": "knip"
+    "knip": "knip",
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "eslint --fix . && prettier --write .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "lint",
@@ -36,8 +40,15 @@
     "@babel/types": "^7.24.0",
     "@types/babel__traverse": "^7.20.5",
     "@types/node": "^20.11.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import-x": "^4.16.1",
+    "eslint-plugin-security": "^3.0.1",
+    "globals": "^17.3.0",
     "knip": "^5.83.1",
+    "prettier": "^3.8.1",
     "typescript": "^5.3.0",
+    "typescript-eslint": "^8.54.0",
     "vitest": "^4.0.18"
   }
 }

@@ -66,8 +66,10 @@ export function glassNoOpacityAnimation(ast: File, _code: string): LintResult[] 
             // Check if this is related to glass
             let parent: typeof path.parentPath = path.parentPath;
             while (parent) {
-              if (parent.node.type === 'FunctionDeclaration' ||
-                  parent.node.type === 'ArrowFunctionExpression') {
+              if (
+                parent.node.type === 'FunctionDeclaration' ||
+                parent.node.type === 'ArrowFunctionExpression'
+              ) {
                 // Just warn generally about opacity animations potentially affecting glass
                 break;
               }
@@ -82,18 +84,11 @@ export function glassNoOpacityAnimation(ast: File, _code: string): LintResult[] 
   return results;
 }
 
-function checkForAnimatedOpacity(
-  properties: any[],
-  results: LintResult[],
-  loc: any
-): void {
+function checkForAnimatedOpacity(properties: any[], results: LintResult[], loc: any): void {
   for (const prop of properties) {
     if (prop.type !== 'ObjectProperty') continue;
 
-    if (
-      prop.key.type === 'Identifier' &&
-      prop.key.name === 'opacity'
-    ) {
+    if (prop.key.type === 'Identifier' && prop.key.name === 'opacity') {
       // Check if the value is animated (an Animated.Value or interpolation)
       const value = prop.value;
 

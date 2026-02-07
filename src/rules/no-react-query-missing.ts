@@ -14,10 +14,7 @@ export function noReactQueryMissing(ast: File, _code: string): LintResult[] {
   traverse(ast, {
     ImportDeclaration(path) {
       const { source } = path.node;
-      if (
-        source.value === '@tanstack/react-query' ||
-        source.value === 'react-query'
-      ) {
+      if (source.value === '@tanstack/react-query' || source.value === 'react-query') {
         hasReactQueryImport = true;
       }
     },
@@ -57,7 +54,7 @@ export function noReactQueryMissing(ast: File, _code: string): LintResult[] {
     results.push({
       rule: RULE_NAME,
       message:
-        "Use @tanstack/react-query for data fetching instead of fetch() in useEffect. It provides caching, loading states, and error handling.",
+        'Use @tanstack/react-query for data fetching instead of fetch() in useEffect. It provides caching, loading states, and error handling.',
       line,
       column,
       severity: 'warning',

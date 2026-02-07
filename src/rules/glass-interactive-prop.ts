@@ -21,10 +21,7 @@ export function glassInteractiveProp(ast: File, _code: string): LintResult[] {
       const { name, loc } = openingElement;
 
       // Check if this is a Pressable-type component
-      if (
-        name.type !== 'JSXIdentifier' ||
-        !PRESSABLE_COMPONENTS.includes(name.name)
-      ) {
+      if (name.type !== 'JSXIdentifier' || !PRESSABLE_COMPONENTS.includes(name.name)) {
         return;
       }
 
@@ -52,7 +49,7 @@ export function glassInteractiveProp(ast: File, _code: string): LintResult[] {
                   glassViewHasInteractive = true;
                 } else if (attrValue.type === 'JSXExpressionContainer') {
                   const expr = attrValue.expression;
-                  if (expr.type === 'BooleanLiteral' && expr.value === true) {
+                  if (expr.type === 'BooleanLiteral' && expr.value) {
                     glassViewHasInteractive = true;
                   }
                 }

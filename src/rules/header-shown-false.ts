@@ -34,10 +34,7 @@ export function headerShownFalse(ast: File, _code: string): LintResult[] {
           attr.name.type === 'JSXIdentifier' &&
           attr.name.name === 'name'
         ) {
-          if (
-            attr.value?.type === 'StringLiteral' &&
-            attr.value.value === '(tabs)'
-          ) {
+          if (attr.value?.type === 'StringLiteral' && attr.value.value === '(tabs)') {
             isTabsGroupScreen = true;
             break;
           }
@@ -62,7 +59,7 @@ export function headerShownFalse(ast: File, _code: string): LintResult[] {
                 prop.key.type === 'Identifier' &&
                 prop.key.name === 'headerShown' &&
                 prop.value.type === 'BooleanLiteral' &&
-                prop.value.value === false
+                !prop.value.value
               ) {
                 hasHeaderShownFalse = true;
               }
@@ -73,8 +70,7 @@ export function headerShownFalse(ast: File, _code: string): LintResult[] {
         if (!hasHeaderShownFalse) {
           results.push({
             rule: RULE_NAME,
-            message:
-              'The (tabs) Screen should have options={{ headerShown: false }}',
+            message: 'The (tabs) Screen should have options={{ headerShown: false }}',
             line: loc?.start.line ?? 0,
             column: loc?.start.column ?? 0,
             severity: 'warning',

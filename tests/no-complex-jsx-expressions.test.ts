@@ -55,7 +55,7 @@ describe('no-complex-jsx-expressions rule', () => {
   });
 
   it('should allow template literals', () => {
-    const code = "<div>{`Hello, ${name}!`}</div>";
+    const code = '<div>{`Hello, ${name}!`}</div>';
     const results = lintJsxCode(code, config);
     expect(results).toHaveLength(0);
   });

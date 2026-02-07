@@ -5,7 +5,7 @@ const config = { rules: ['sql-no-nested-calls'] };
 
 describe('sql-no-nested-calls rule', () => {
   it('should detect nested sql template tag', () => {
-    const code = "sql`UPDATE users SET ${sql`name = ${name}`} WHERE id = ${id}`";
+    const code = 'sql`UPDATE users SET ${sql`name = ${name}`} WHERE id = ${id}`';
     const results = lintJsxCode(code, config);
     expect(results).toHaveLength(1);
     expect(results[0].rule).toBe('sql-no-nested-calls');
@@ -13,14 +13,14 @@ describe('sql-no-nested-calls rule', () => {
   });
 
   it('should detect nested sql function call', () => {
-    const code = "sql`UPDATE invoices SET ${sql(setClause)} WHERE id = ${id}`";
+    const code = 'sql`UPDATE invoices SET ${sql(setClause)} WHERE id = ${id}`';
     const results = lintJsxCode(code, config);
     expect(results).toHaveLength(1);
     expect(results[0].message).toContain('nest');
   });
 
   it('should allow simple sql template', () => {
-    const code = "const rows = await sql`SELECT * FROM users WHERE id = ${userId}`";
+    const code = 'const rows = await sql`SELECT * FROM users WHERE id = ${userId}`';
     const results = lintJsxCode(code, config);
     expect(results).toHaveLength(0);
   });

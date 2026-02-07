@@ -4,10 +4,7 @@ import type { LintResult } from '../types';
 
 const RULE_NAME = 'transition-prefer-blank-stack';
 
-export function transitionPreferBlankStack(
-  ast: File,
-  _code: string
-): LintResult[] {
+export function transitionPreferBlankStack(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];
 
   traverse(ast, {
@@ -15,18 +12,11 @@ export function transitionPreferBlankStack(
       const { key, value, loc } = path.node;
 
       const keyName =
-        key.type === 'Identifier'
-          ? key.name
-          : key.type === 'StringLiteral'
-            ? key.value
-            : null;
+        key.type === 'Identifier' ? key.name : key.type === 'StringLiteral' ? key.value : null;
 
       if (keyName !== 'enableTransitions') return;
 
-      if (
-        value.type === 'BooleanLiteral' &&
-        value.value === true
-      ) {
+      if (value.type === 'BooleanLiteral' && value.value) {
         results.push({
           rule: RULE_NAME,
           message:

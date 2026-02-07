@@ -1,5 +1,5 @@
 import traverse from '@babel/traverse';
-import type { File, StringLiteral } from '@babel/types';
+import type { File } from '@babel/types';
 import type { LintResult } from '../types';
 
 const RULE_NAME = 'no-relative-paths';
@@ -11,7 +11,7 @@ function isRelativePath(path: string): boolean {
 function createLintResult(
   node: { loc?: { start: { line: number; column: number } } | null },
   path: string,
-  context: string
+  context: string,
 ): LintResult {
   return {
     rule: RULE_NAME,
@@ -33,10 +33,7 @@ export function noRelativePaths(ast: File, _code: string): LintResult[] {
       // Also handles getRouter().navigate(), etc.
       let methodName: string | null = null;
 
-      if (
-        callee.type === 'MemberExpression' &&
-        callee.property.type === 'Identifier'
-      ) {
+      if (callee.type === 'MemberExpression' && callee.property.type === 'Identifier') {
         const propName = callee.property.name;
         if (['navigate', 'push', 'replace'].includes(propName)) {
           methodName = propName;
@@ -46,9 +43,7 @@ export function noRelativePaths(ast: File, _code: string): LintResult[] {
       if (methodName && args.length > 0) {
         const firstArg = args[0];
         if (firstArg.type === 'StringLiteral' && isRelativePath(firstArg.value)) {
-          results.push(
-            createLintResult(firstArg, firstArg.value, `router.${methodName}()`)
-          );
+          results.push(createLintResult(firstArg, firstArg.value, `router.${methodName}()`));
         }
       }
     },
@@ -66,21 +61,16 @@ export function noRelativePaths(ast: File, _code: string): LintResult[] {
             attr.value
           ) {
             // Handle href="string"
-            if (
-              attr.value.type === 'StringLiteral' &&
-              isRelativePath(attr.value.value)
-            ) {
-              results.push(
-                createLintResult(attr.value, attr.value.value, '<Link href>')
-              );
+            if (attr.value.type === 'StringLiteral' && isRelativePath(attr.value.value)) {
+              results.push(createLintResult(attr.value, attr.value.value, '<Link href>'));
             }
             // Handle href={"string"}
             else if (
               attr.value.type === 'JSXExpressionContainer' &&
               attr.value.expression.type === 'StringLiteral' &&
-              isRelativePath((attr.value.expression as StringLiteral).value)
+              isRelativePath(attr.value.expression.value)
             ) {
-              const expr = attr.value.expression as StringLiteral;
+              const expr = attr.value.expression;
               results.push(createLintResult(expr, expr.value, '<Link href>'));
             }
           }

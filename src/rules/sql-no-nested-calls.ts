@@ -56,7 +56,7 @@ export function sqlNoNestedCalls(ast: File, _code: string): LintResult[] {
           // Check if 'query' was assigned from a sql call in this scope
           const binding = path.scope.getBinding('query');
           if (binding?.path.node.type === 'VariableDeclarator') {
-            const init = (binding.path.node as any).init;
+            const init = binding.path.node.init;
             if (
               init?.type === 'TaggedTemplateExpression' &&
               init.tag?.type === 'Identifier' &&

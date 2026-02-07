@@ -4,10 +4,7 @@ import type { LintResult } from '../types';
 
 const RULE_NAME = 'textinput-keyboard-avoiding';
 
-export function textInputKeyboardAvoiding(
-  ast: File,
-  _code: string
-): LintResult[] {
+export function textInputKeyboardAvoiding(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];
 
   let hasTextInput = false;
@@ -16,7 +13,7 @@ export function textInputKeyboardAvoiding(
 
   traverse(ast, {
     ImportDeclaration(path) {
-      const { source, specifiers } = path.node;
+      const { specifiers } = path.node;
 
       // Check for KeyboardAvoidingAnimatedView or KeyboardAvoidingView import
       for (const spec of specifiers) {
@@ -28,10 +25,7 @@ export function textInputKeyboardAvoiding(
                 ? spec.imported.name
                 : '';
 
-          if (
-            name === 'KeyboardAvoidingAnimatedView' ||
-            name === 'KeyboardAvoidingView'
-          ) {
+          if (name === 'KeyboardAvoidingAnimatedView' || name === 'KeyboardAvoidingView') {
             hasKeyboardAvoidingView = true;
           }
         }
@@ -52,10 +46,7 @@ export function textInputKeyboardAvoiding(
           }
         }
 
-        if (
-          name.name === 'KeyboardAvoidingAnimatedView' ||
-          name.name === 'KeyboardAvoidingView'
-        ) {
+        if (name.name === 'KeyboardAvoidingAnimatedView' || name.name === 'KeyboardAvoidingView') {
           hasKeyboardAvoidingView = true;
         }
       }

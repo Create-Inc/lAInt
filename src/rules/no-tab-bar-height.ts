@@ -1,5 +1,5 @@
 import traverse from '@babel/traverse';
-import type { File, ObjectProperty } from '@babel/types';
+import type { File, ObjectMethod, ObjectProperty, SpreadElement } from '@babel/types';
 import type { LintResult } from '../types';
 
 const RULE_NAME = 'no-tab-bar-height';
@@ -32,8 +32,8 @@ export function noTabBarHeight(ast: File, _code: string): LintResult[] {
 }
 
 function checkForTabBarHeight(
-  properties: (ObjectProperty | any)[],
-  results: LintResult[]
+  properties: (ObjectMethod | ObjectProperty | SpreadElement)[],
+  results: LintResult[],
 ): void {
   for (const prop of properties) {
     if (prop.type !== 'ObjectProperty') continue;

@@ -4,10 +4,7 @@ import type { LintResult } from '../types';
 
 const RULE_NAME = 'tabs-screen-options-header-shown';
 
-export function tabsScreenOptionsHeaderShown(
-  ast: File,
-  _code: string
-): LintResult[] {
+export function tabsScreenOptionsHeaderShown(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];
 
   traverse(ast, {
@@ -42,7 +39,7 @@ export function tabsScreenOptionsHeaderShown(
               prop.key.type === 'Identifier' &&
               prop.key.name === 'headerShown' &&
               prop.value.type === 'BooleanLiteral' &&
-              prop.value.value === false
+              !prop.value.value
             ) {
               hasHeaderShownFalse = true;
               break;

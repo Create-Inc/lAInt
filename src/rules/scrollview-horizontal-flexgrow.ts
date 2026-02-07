@@ -4,10 +4,7 @@ import type { LintResult } from '../types';
 
 const RULE_NAME = 'scrollview-horizontal-flexgrow';
 
-export function scrollviewHorizontalFlexgrow(
-  ast: File,
-  _code: string
-): LintResult[] {
+export function scrollviewHorizontalFlexgrow(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];
 
   traverse(ast, {
@@ -34,7 +31,7 @@ export function scrollviewHorizontalFlexgrow(
             hasHorizontal = true;
           } else if (attrValue.type === 'JSXExpressionContainer') {
             const expr = attrValue.expression;
-            if (expr.type === 'BooleanLiteral' && expr.value === true) {
+            if (expr.type === 'BooleanLiteral' && expr.value) {
               // <ScrollView horizontal={true} />
               hasHorizontal = true;
             }

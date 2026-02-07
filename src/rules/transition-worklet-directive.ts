@@ -4,10 +4,7 @@ import type { LintResult } from '../types';
 
 const RULE_NAME = 'transition-worklet-directive';
 
-export function transitionWorkletDirective(
-  ast: File,
-  _code: string
-): LintResult[] {
+export function transitionWorkletDirective(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];
 
   traverse(ast, {
@@ -16,20 +13,12 @@ export function transitionWorkletDirective(
 
       // Check if key is `screenStyleInterpolator`
       const keyName =
-        key.type === 'Identifier'
-          ? key.name
-          : key.type === 'StringLiteral'
-            ? key.value
-            : null;
+        key.type === 'Identifier' ? key.name : key.type === 'StringLiteral' ? key.value : null;
 
       if (keyName !== 'screenStyleInterpolator') return;
 
       // Check if value is an arrow function or function expression
-      if (
-        value.type !== 'ArrowFunctionExpression' &&
-        value.type !== 'FunctionExpression'
-      )
-        return;
+      if (value.type !== 'ArrowFunctionExpression' && value.type !== 'FunctionExpression') return;
 
       const { body } = value;
 
@@ -48,10 +37,9 @@ export function transitionWorkletDirective(
 
       // Check if directives contain "worklet" (Babel parses string
       // directives into the `directives` array, not the body statements)
-      const hasWorklet =
-        body.directives.some(
-          (d) => d.type === 'Directive' && d.value.value === 'worklet'
-        );
+      const hasWorklet = body.directives.some(
+        (d) => d.type === 'Directive' && d.value.value === 'worklet',
+      );
 
       if (!hasWorklet) {
         results.push({

@@ -24,7 +24,7 @@ export function preferLucideIcons(ast: File, _code: string): LintResult[] {
       // Check if importing from discouraged icon packages
       if (
         DISCOURAGED_ICON_PACKAGES.some(
-          (pkg) => packageName === pkg || packageName.startsWith(pkg + '/')
+          (pkg) => packageName === pkg || packageName.startsWith(pkg + '/'),
         )
       ) {
         results.push({

@@ -11,10 +11,7 @@ export function noInlineScriptCode(ast: File, _code: string): LintResult[] {
     JSXElement(path) {
       const { openingElement, children, loc } = path.node;
 
-      if (
-        openingElement.name.type !== 'JSXIdentifier' ||
-        openingElement.name.name !== 'script'
-      ) {
+      if (openingElement.name.type !== 'JSXIdentifier' || openingElement.name.name !== 'script') {
         return;
       }
 
@@ -23,7 +20,7 @@ export function noInlineScriptCode(ast: File, _code: string): LintResult[] {
         (attr) =>
           attr.type === 'JSXAttribute' &&
           attr.name.type === 'JSXIdentifier' &&
-          attr.name.name === 'src'
+          attr.name.name === 'src',
       );
 
       if (hasSrc) {

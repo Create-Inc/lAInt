@@ -9,10 +9,7 @@ const COMPONENTS_TO_REPLACE: Record<string, string> = {
   FlatList: 'Transition.FlatList',
 };
 
-export function transitionGestureScrollview(
-  ast: File,
-  _code: string
-): LintResult[] {
+export function transitionGestureScrollview(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];
 
   let hasTransitionImport = false;
