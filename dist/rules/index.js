@@ -24,6 +24,11 @@ import { sqlNoNestedCalls } from './sql-no-nested-calls.js';
 import { glassNoOpacityAnimation } from './glass-no-opacity-animation.js';
 import { noComplexJsxExpressions } from './no-complex-jsx-expressions.js';
 import { textInputKeyboardAvoiding } from './textinput-keyboard-avoiding.js';
+import { transitionWorkletDirective } from './transition-worklet-directive.js';
+import { transitionProgressRange } from './transition-progress-range.js';
+import { transitionGestureScrollview } from './transition-gesture-scrollview.js';
+import { transitionSharedTagMismatch } from './transition-shared-tag-mismatch.js';
+import { transitionPreferBlankStack } from './transition-prefer-blank-stack.js';
 export const rules = {
     'no-relative-paths': noRelativePaths,
     'no-require-statements': noRequireStatements,
@@ -51,4 +56,9 @@ export const rules = {
     'glass-no-opacity-animation': glassNoOpacityAnimation,
     'no-complex-jsx-expressions': noComplexJsxExpressions,
     'textinput-keyboard-avoiding': textInputKeyboardAvoiding,
+    'transition-worklet-directive': transitionWorkletDirective,
+    'transition-progress-range': transitionProgressRange,
+    'transition-gesture-scrollview': transitionGestureScrollview,
+    'transition-shared-tag-mismatch': transitionSharedTagMismatch,
+    'transition-prefer-blank-stack': transitionPreferBlankStack,
 };
