@@ -70,4 +70,12 @@ describe('no-deprecated-url-parse rule', () => {
     const results = lintJsxCode(code, config);
     expect(results).toHaveLength(0);
   });
+
+  it('should not flag URL.parse static method (modern WHATWG URL API)', () => {
+    const code = `
+      const result = URL.parse('https://example.com');
+    `;
+    const results = lintJsxCode(code, config);
+    expect(results).toHaveLength(0);
+  });
 });
