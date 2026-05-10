@@ -52,6 +52,7 @@ export const rulePlatforms: Partial<Record<string, Platform[]>> = {
   'sql-no-nested-calls': ['backend'],
   'no-sync-fs': ['backend'],
   'no-unrestricted-loop-in-serverless': ['backend'],
+  'no-deprecated-url-parse': ['backend'],
 
   // Universal rules (NOT listed here): prefer-guard-clauses, no-type-assertion,
   // no-string-coerce-error
