@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-relative-paths';
+
+export const meta = {
+  name: 'no-relative-paths',
+  severity: 'error' as const,
+  platforms: ['expo', 'web'] as Platform[] | null,
+  category: 'Expo Router',
+  description: 'Use absolute paths in router.navigate/push and Link href',
+};
 
 function isRelativePath(path: string): boolean {
   return path.startsWith('./') || path.startsWith('../');

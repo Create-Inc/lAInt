@@ -1,9 +1,17 @@
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-inline-styles';
+
+export const meta = {
+  name: 'no-inline-styles',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Tailwind CSS',
+  description: 'Avoid inline styles, use Tailwind CSS classes instead',
+};
 
 export function noInlineStyles(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

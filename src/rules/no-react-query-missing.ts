@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-react-query-missing';
+
+export const meta = {
+  name: 'no-react-query-missing',
+  severity: 'warning' as const,
+  platforms: ['expo', 'web'] as Platform[] | null,
+  category: 'React / JSX',
+  description: 'Use @tanstack/react-query for data fetching',
+};
 
 export function noReactQueryMissing(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

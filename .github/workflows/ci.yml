@@ -129,3 +129,28 @@ jobs:
 
       - name: Check for unused dependencies
         run: npm run knip
+
+  sync-verify:
+    name: Registry & README in sync
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run sync script
+        run: npm run sync
+
+      - name: Verify no diff
+        run: |
+          if ! git diff --exit-code -- src/rules/index.ts README.md; then
+            echo "::error::scripts/sync.ts produced a diff. Run 'npm run sync' locally and commit the result."
+            exit 1
+          fi

@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getRulesForPlatform, getAllRuleNames, lintJsxCode } from '../src';
-import { rulePlatforms } from '../src/rules/meta';
+import { getRulesForPlatform, getAllRuleNames, getRuleMeta, lintJsxCode } from '../src';
 
 describe('getRulesForPlatform', () => {
   const allRules = getAllRuleNames();
@@ -85,7 +84,7 @@ describe('getRulesForPlatform', () => {
     const webRules = new Set(getRulesForPlatform('web'));
     const backendRules = new Set(getRulesForPlatform('backend'));
 
-    const universalRules = allRules.filter((name) => !rulePlatforms[name]);
+    const universalRules = allRules.filter((name) => !getRuleMeta(name)?.platforms);
     expect(universalRules.length).toBeGreaterThan(0);
 
     for (const rule of universalRules) {

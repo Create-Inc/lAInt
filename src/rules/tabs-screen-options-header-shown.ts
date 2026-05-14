@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'tabs-screen-options-header-shown';
+
+export const meta = {
+  name: 'tabs-screen-options-header-shown',
+  severity: 'warning' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'React Native / Expo',
+  description: 'Tabs screenOptions should have `headerShown: false`',
+};
 
 export function tabsScreenOptionsHeaderShown(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

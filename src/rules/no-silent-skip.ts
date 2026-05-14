@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File, IfStatement, Statement } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-silent-skip';
+
+export const meta = {
+  name: 'no-silent-skip',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'Add else branch with logging instead of silently skipping',
+};
 
 const EARLY_EXIT_TYPES = new Set([
   'ReturnStatement',

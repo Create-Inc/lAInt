@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-nested-try-catch';
+
+export const meta = {
+  name: 'no-nested-try-catch',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'Avoid nested try-catch blocks, extract to separate functions',
+};
 
 export function noNestedTryCatch(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-emoji-icons';
+
+export const meta = {
+  name: 'no-emoji-icons',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'Use icons from lucide-react instead of emoji characters',
+};
 
 // Regex covering common emoji Unicode ranges
 const EMOJI_REGEX =

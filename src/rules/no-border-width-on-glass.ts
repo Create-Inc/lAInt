@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-border-width-on-glass';
+
+export const meta = {
+  name: 'no-border-width-on-glass',
+  severity: 'error' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'Liquid Glass',
+  description: 'No borderWidth on GlassView (breaks borderRadius)',
+};
 
 export function noBorderWidthOnGlass(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

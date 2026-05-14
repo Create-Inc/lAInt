@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'safe-json-parse';
+
+export const meta = {
+  name: 'safe-json-parse',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'Wrap JSON.parse in try-catch to handle malformed input',
+};
 
 export function safeJsonParse(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

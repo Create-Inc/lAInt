@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'textinput-keyboard-avoiding';
+
+export const meta = {
+  name: 'textinput-keyboard-avoiding',
+  severity: 'warning' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'React Native / Expo',
+  description: 'TextInput should be inside KeyboardAvoidingView',
+};
 
 export function textInputKeyboardAvoiding(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

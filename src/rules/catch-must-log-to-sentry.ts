@@ -1,9 +1,17 @@
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'catch-must-log-to-sentry';
+
+export const meta = {
+  name: 'catch-must-log-to-sentry',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Error Handling',
+  description: 'Catch blocks with logger.error/console.error must also call Sentry',
+};
 
 /**
  * Recursively check if a node contains a call matching `object.method` pattern.

@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'fetch-response-ok-check';
+
+export const meta = {
+  name: 'fetch-response-ok-check',
+  severity: 'warning' as const,
+  platforms: ['web', 'backend'] as Platform[] | null,
+  category: 'React / JSX',
+  description: 'Check response.ok when using fetch',
+};
 
 export function fetchResponseOkCheck(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

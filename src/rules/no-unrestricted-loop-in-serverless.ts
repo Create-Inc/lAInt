@@ -1,9 +1,17 @@
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-unrestricted-loop-in-serverless';
+
+export const meta = {
+  name: 'no-unrestricted-loop-in-serverless',
+  severity: 'error' as const,
+  platforms: ['backend'] as Platform[] | null,
+  category: 'Backend / SQL',
+  description: 'Avoid unbounded loops that can time out serverless functions',
+};
 
 export function noUnrestrictedLoopInServerless(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

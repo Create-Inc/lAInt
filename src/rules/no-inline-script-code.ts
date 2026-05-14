@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-inline-script-code';
+
+export const meta = {
+  name: 'no-inline-script-code',
+  severity: 'error' as const,
+  platforms: ['web'] as Platform[] | null,
+  category: 'React / JSX',
+  description: 'Script tags should use template literals',
+};
 
 export function noInlineScriptCode(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

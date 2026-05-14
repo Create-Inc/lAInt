@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'transition-gesture-scrollview';
+
+export const meta = {
+  name: 'transition-gesture-scrollview',
+  severity: 'warning' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'Screen Transitions',
+  description: 'Use Transition.ScrollView/FlatList instead of regular versions',
+};
 
 const COMPONENTS_TO_REPLACE: Record<string, string> = {
   ScrollView: 'Transition.ScrollView',

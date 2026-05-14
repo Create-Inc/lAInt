@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'browser-api-in-useeffect';
+
+export const meta = {
+  name: 'browser-api-in-useeffect',
+  severity: 'warning' as const,
+  platforms: ['web'] as Platform[] | null,
+  category: 'React / JSX',
+  description: 'window/localStorage only in useEffect for SSR',
+};
 
 const BROWSER_APIS = ['window', 'localStorage', 'sessionStorage', 'document'];
 

@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-complex-jsx-expressions';
+
+export const meta = {
+  name: 'no-complex-jsx-expressions',
+  severity: 'warning' as const,
+  platforms: ['expo', 'web'] as Platform[] | null,
+  category: 'React / JSX',
+  description: 'Avoid IIFEs and complex expressions in JSX',
+};
 
 export function noComplexJsxExpressions(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

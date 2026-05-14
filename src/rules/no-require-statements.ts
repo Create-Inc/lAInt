@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-require-statements';
+
+export const meta = {
+  name: 'no-require-statements',
+  severity: 'error' as const,
+  platforms: ['backend'] as Platform[] | null,
+  category: 'Backend / SQL',
+  description: 'Use ES imports, not CommonJS require',
+};
 
 export function noRequireStatements(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

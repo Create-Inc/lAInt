@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-server-import-in-client';
+
+export const meta = {
+  name: 'no-server-import-in-client',
+  severity: 'error' as const,
+  platforms: ['web'] as Platform[] | null,
+  category: 'Next.js',
+  description: '"use client" files must not import server-only modules',
+};
 
 const SERVER_ONLY_MODULES = ['server-only', 'next/headers'];
 

@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'transition-progress-range';
+
+export const meta = {
+  name: 'transition-progress-range',
+  severity: 'warning' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'Screen Transitions',
+  description: 'interpolate() should cover full [0, 1, 2] range including exit phase',
+};
 
 export function transitionProgressRange(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

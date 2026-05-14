@@ -1,9 +1,17 @@
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-loose-equality';
+
+export const meta = {
+  name: 'no-loose-equality',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'Use === and !== instead of == and != (except == null)',
+};
 
 export function noLooseEquality(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

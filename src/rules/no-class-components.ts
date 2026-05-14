@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-class-components';
+
+export const meta = {
+  name: 'no-class-components',
+  severity: 'warning' as const,
+  platforms: ['expo', 'web'] as Platform[] | null,
+  category: 'React / JSX',
+  description: 'Use function components with hooks',
+};
 
 export function noClassComponents(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'scrollview-horizontal-flexgrow';
+
+export const meta = {
+  name: 'scrollview-horizontal-flexgrow',
+  severity: 'warning' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'React Native / Expo',
+  description: 'Horizontal ScrollView needs `flexGrow: 0`',
+};
 
 export function scrollviewHorizontalFlexgrow(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

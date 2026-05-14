@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'glass-interactive-prop';
+
+export const meta = {
+  name: 'glass-interactive-prop',
+  severity: 'warning' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'Liquid Glass',
+  description: 'GlassView in pressables needs `isInteractive={true}`',
+};
 
 const PRESSABLE_COMPONENTS = [
   'TouchableOpacity',

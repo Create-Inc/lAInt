@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'native-tabs-bottom-padding';
+
+export const meta = {
+  name: 'native-tabs-bottom-padding',
+  severity: 'warning' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'React Native / Expo',
+  description: 'NativeTabs screens need 64px bottom padding',
+};
 
 export function nativeTabsBottomPadding(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

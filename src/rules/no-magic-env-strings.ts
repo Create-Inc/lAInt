@@ -1,9 +1,17 @@
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-magic-env-strings';
+
+export const meta = {
+  name: 'no-magic-env-strings',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'Use centralized enum for env variable names, not magic strings',
+};
 
 export function noMagicEnvStrings(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

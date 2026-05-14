@@ -1,9 +1,17 @@
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'url-params-must-encode';
+
+export const meta = {
+  name: 'url-params-must-encode',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'URL',
+  description: 'URL query param values must be wrapped in encodeURIComponent()',
+};
 
 export function urlParamsMustEncode(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

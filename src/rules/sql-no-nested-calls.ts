@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'sql-no-nested-calls';
+
+export const meta = {
+  name: 'sql-no-nested-calls',
+  severity: 'error' as const,
+  platforms: ['backend'] as Platform[] | null,
+  category: 'Backend / SQL',
+  description: "Don't nest sql template tags",
+};
 
 export function sqlNoNestedCalls(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

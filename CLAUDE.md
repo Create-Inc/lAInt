@@ -25,12 +25,25 @@ laint is an AI Agent Lint Rules SDK — a programmatic API for linting JSX/TSX c
 
 ## Adding a new rule
 
-1. Create `src/rules/my-rule.ts` exporting a `RuleFunction`
-2. Register it in `src/rules/index.ts`
-3. Create `tests/my-rule.test.ts`
-4. **Update the rule count assertion in `tests/config-modes.test.ts`** — the `getAllRuleNames` test has `expect(ruleNames.length).toBe(...)` that must match the total number of registered rules
-5. **Document the rule in `README.md`** — CI checks that every registered rule name appears in the README
-6. Run `npm test` to verify
+1. Create `src/rules/my-rule.ts` exporting BOTH a `RuleFunction` and a `meta` object:
+
+   ```ts
+   export const meta = {
+     name: 'my-rule',
+     severity: 'error' as const,
+     platforms: ['expo', 'web'] as Platform[] | null,
+     category: 'React / JSX',
+     description: 'One-line summary shown in README table',
+   };
+
+   export function myRule(ast: File, _code: string): LintResult[] { ... }
+   ```
+
+2. Create `tests/my-rule.test.ts`
+3. Run `npm run sync` — regenerates `src/rules/index.ts` and the README rule tables from the per-rule `meta` exports
+4. Run `npm test` to verify
+
+That's it. The registry, README rule tables, platform tags, and rule count are all derived from the rule files. CI verifies `npm run sync` was run (no diff).
 
 ## Code style
 

@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-type-assertion';
+
+export const meta = {
+  name: 'no-type-assertion',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'Avoid `as` type casts; use type narrowing or proper types',
+};
 
 export function noTypeAssertion(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

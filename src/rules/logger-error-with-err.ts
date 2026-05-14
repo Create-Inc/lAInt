@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'logger-error-with-err';
+
+export const meta = {
+  name: 'logger-error-with-err',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'logger.error() must include { err: Error } for stack traces',
+};
 
 export function loggerErrorWithErr(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

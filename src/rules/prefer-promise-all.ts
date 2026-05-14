@@ -15,6 +15,14 @@ import type { LintResult } from '../types';
 
 const RULE_NAME = 'prefer-promise-all';
 
+export const meta = {
+  name: 'prefer-promise-all',
+  severity: 'warning' as const,
+  platforms: null,
+  category: 'Code Style',
+  description: 'Prefer Promise.all for independent async work in loops',
+};
+
 export function preferPromiseAll(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];
 

@@ -1,9 +1,17 @@
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-sync-fs';
+
+export const meta = {
+  name: 'no-sync-fs',
+  severity: 'error' as const,
+  platforms: ['backend'] as Platform[] | null,
+  category: 'Backend / SQL',
+  description: 'Use fs.promises or fs/promises instead of sync fs methods',
+};
 
 function isSyncMethod(name: string): boolean {
   return name.endsWith('Sync');

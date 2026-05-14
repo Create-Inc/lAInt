@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'prefer-lucide-icons';
+
+export const meta = {
+  name: 'prefer-lucide-icons',
+  severity: 'warning' as const,
+  platforms: ['expo', 'web'] as Platform[] | null,
+  category: 'General',
+  description: 'Prefer lucide-react/lucide-react-native icons',
+};
 
 // Common icon libraries that should be replaced with lucide
 const DISCOURAGED_ICON_PACKAGES = [

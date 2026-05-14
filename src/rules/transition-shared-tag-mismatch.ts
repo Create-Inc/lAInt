@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'transition-shared-tag-mismatch';
+
+export const meta = {
+  name: 'transition-shared-tag-mismatch',
+  severity: 'warning' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'Screen Transitions',
+  description: 'sharedBoundTag on Transition.Pressable must have matching Transition.View',
+};
 
 interface TagInfo {
   tag: string;

@@ -1,9 +1,17 @@
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-string-coerce-error';
+
+export const meta = {
+  name: 'no-string-coerce-error',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'Use JSON.stringify instead of String() for unknown caught errors',
+};
 
 /**
  * Check if an expression contains a `String(name)` call where `name` matches the given identifier.

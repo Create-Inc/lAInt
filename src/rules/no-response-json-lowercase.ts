@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-response-json-lowercase';
+
+export const meta = {
+  name: 'no-response-json-lowercase',
+  severity: 'warning' as const,
+  platforms: ['backend'] as Platform[] | null,
+  category: 'Backend / SQL',
+  description: 'Use Response.json() instead of new Response(JSON.stringify())',
+};
 
 export function noResponseJsonLowercase(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

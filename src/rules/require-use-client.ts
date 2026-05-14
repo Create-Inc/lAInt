@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'require-use-client';
+
+export const meta = {
+  name: 'require-use-client',
+  severity: 'error' as const,
+  platforms: ['web'] as Platform[] | null,
+  category: 'Next.js',
+  description: 'Files using client-only features must have "use client" directive',
+};
 
 export function requireUseClient(ast: File, _code: string): LintResult[] {
   const hasDirective = ast.program.directives.some(

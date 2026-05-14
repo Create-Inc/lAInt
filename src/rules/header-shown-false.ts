@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'header-shown-false';
+
+export const meta = {
+  name: 'header-shown-false',
+  severity: 'warning' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'Expo Router',
+  description: '(tabs) Screen in root layout needs `headerShown: false`',
+};
 
 export function headerShownFalse(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

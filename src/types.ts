@@ -31,3 +31,11 @@ export interface LintConfig {
 }
 
 export type RuleFunction = (ast: File, code: string) => LintResult[];
+
+export interface RuleMeta {
+  name: string;
+  severity: 'error' | 'warning';
+  platforms: Platform[] | null;
+  category: string;
+  description: string;
+}

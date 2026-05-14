@@ -7,9 +7,17 @@ import type {
   IfStatement,
   Statement,
 } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'prefer-guard-clauses';
+
+export const meta = {
+  name: 'prefer-guard-clauses',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'Use early returns instead of nesting if statements',
+};
 
 type FunctionNode = ArrowFunctionExpression | FunctionDeclaration | FunctionExpression;
 

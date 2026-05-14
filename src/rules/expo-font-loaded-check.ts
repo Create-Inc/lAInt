@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'expo-font-loaded-check';
+
+export const meta = {
+  name: 'expo-font-loaded-check',
+  severity: 'error' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'React Native / Expo',
+  description: 'useFonts() must check loaded before rendering',
+};
 
 export function expoFontLoadedCheck(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-module-level-new';
+
+export const meta = {
+  name: 'no-module-level-new',
+  severity: 'error' as const,
+  platforms: ['web'] as Platform[] | null,
+  category: 'Next.js',
+  description: 'Avoid module-level constructors that execute during SSR',
+};
 
 const SAFE_CONSTRUCTORS = new Set([
   'Error',

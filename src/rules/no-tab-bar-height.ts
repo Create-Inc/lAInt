@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File, ObjectMethod, ObjectProperty, SpreadElement } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-tab-bar-height';
+
+export const meta = {
+  name: 'no-tab-bar-height',
+  severity: 'error' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'React Native / Expo',
+  description: 'Never set explicit height in tabBarStyle',
+};
 
 export function noTabBarHeight(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

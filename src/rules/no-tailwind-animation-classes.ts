@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-tailwind-animation-classes';
+
+export const meta = {
+  name: 'no-tailwind-animation-classes',
+  severity: 'warning' as const,
+  platforms: ['web'] as Platform[] | null,
+  category: 'Tailwind CSS',
+  description: 'Avoid animate-\* classes, use style jsx global instead',
+};
 
 // Tailwind animation class patterns
 const ANIMATION_CLASS_PATTERN = /\banimate-\w+/;

@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'transition-worklet-directive';
+
+export const meta = {
+  name: 'transition-worklet-directive',
+  severity: 'error' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'Screen Transitions',
+  description: 'screenStyleInterpolator functions must include "worklet" directive',
+};
 
 export function transitionWorkletDirective(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

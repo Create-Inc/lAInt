@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'expo-image-import';
+
+export const meta = {
+  name: 'expo-image-import',
+  severity: 'warning' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'React Native / Expo',
+  description: 'Import Image from expo-image, not react-native',
+};
 
 export function expoImageImport(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

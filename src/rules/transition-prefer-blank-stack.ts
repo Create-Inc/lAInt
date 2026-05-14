@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'transition-prefer-blank-stack';
+
+export const meta = {
+  name: 'transition-prefer-blank-stack',
+  severity: 'warning' as const,
+  platforms: ['expo'] as Platform[] | null,
+  category: 'Screen Transitions',
+  description: 'Use Blank Stack instead of enableTransitions on Native Stack',
+};
 
 export function transitionPreferBlankStack(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];

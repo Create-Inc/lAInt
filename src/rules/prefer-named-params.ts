@@ -7,9 +7,17 @@ import type {
   FunctionDeclaration,
   FunctionExpression,
 } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'prefer-named-params';
+
+export const meta = {
+  name: 'prefer-named-params',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'Use object destructuring instead of positional parameters',
+};
 
 type FunctionNode = ArrowFunctionExpression | FunctionDeclaration | FunctionExpression;
 

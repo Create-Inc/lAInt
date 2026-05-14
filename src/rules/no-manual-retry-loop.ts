@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-manual-retry-loop';
+
+export const meta = {
+  name: 'no-manual-retry-loop',
+  severity: 'warning' as const,
+  platforms: null as Platform[] | null,
+  category: 'Code Style',
+  description: 'Use a retry library instead of manual retry/polling loops',
+};
 
 export function noManualRetryLoop(ast: File, _code: string): LintResult[] {
   const results: LintResult[] = [];
