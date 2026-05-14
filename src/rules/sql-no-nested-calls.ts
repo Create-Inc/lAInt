@@ -9,7 +9,7 @@ export const meta = {
   severity: 'error' as const,
   platforms: ['backend'] as Platform[] | null,
   category: 'Backend / SQL',
-  description: 'Don\'t nest sql template tags',
+  description: "Don't nest sql template tags",
 };
 
 export function sqlNoNestedCalls(ast: File, _code: string): LintResult[] {

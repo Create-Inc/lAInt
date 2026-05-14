@@ -117,119 +117,124 @@ const webRules = getRulesForPlatform('web');
 const backendRules = getRulesForPlatform('backend');
 ```
 
-## Available Rules (50 total)
+## Available Rules (55 total)
 
 <!-- AUTOGEN:RULES — managed by scripts/sync.ts; run `npm run sync` to update. -->
 
 ### Expo Router Rules
 
-| Rule | Severity | Platform | Description |
-| --- | --- | --- | --- |
-| `header-shown-false` | warning | expo | (tabs) Screen in root layout needs `headerShown: false` |
-| `no-relative-paths` | error | expo, web | Use absolute paths in router.navigate/push and Link href |
+| Rule                 | Severity | Platform  | Description                                              |
+| -------------------- | -------- | --------- | -------------------------------------------------------- |
+| `header-shown-false` | warning  | expo      | (tabs) Screen in root layout needs `headerShown: false`  |
+| `no-relative-paths`  | error    | expo, web | Use absolute paths in router.navigate/push and Link href |
 
 ### React Native / Expo Rules
 
-| Rule | Severity | Platform | Description |
-| --- | --- | --- | --- |
-| `expo-font-loaded-check` | error | expo | useFonts() must check loaded before rendering |
-| `expo-image-import` | warning | expo | Import Image from expo-image, not react-native |
-| `native-tabs-bottom-padding` | warning | expo | NativeTabs screens need 64px bottom padding |
-| `no-safeareaview` | warning | expo | Use useSafeAreaInsets() hook instead of SafeAreaView |
-| `no-stylesheet-create` | warning | expo | Use inline styles instead of StyleSheet.create() |
-| `no-tab-bar-height` | error | expo | Never set explicit height in tabBarStyle |
-| `scrollview-horizontal-flexgrow` | warning | expo | Horizontal ScrollView needs `flexGrow: 0` |
-| `tabs-screen-options-header-shown` | warning | expo | Tabs screenOptions should have `headerShown: false` |
-| `textinput-keyboard-avoiding` | warning | expo | TextInput should be inside KeyboardAvoidingView |
+| Rule                               | Severity | Platform | Description                                          |
+| ---------------------------------- | -------- | -------- | ---------------------------------------------------- |
+| `expo-font-loaded-check`           | error    | expo     | useFonts() must check loaded before rendering        |
+| `expo-image-import`                | warning  | expo     | Import Image from expo-image, not react-native       |
+| `native-tabs-bottom-padding`       | warning  | expo     | NativeTabs screens need 64px bottom padding          |
+| `no-safeareaview`                  | warning  | expo     | Use useSafeAreaInsets() hook instead of SafeAreaView |
+| `no-stylesheet-create`             | warning  | expo     | Use inline styles instead of StyleSheet.create()     |
+| `no-tab-bar-height`                | error    | expo     | Never set explicit height in tabBarStyle             |
+| `scrollview-horizontal-flexgrow`   | warning  | expo     | Horizontal ScrollView needs `flexGrow: 0`            |
+| `tabs-screen-options-header-shown` | warning  | expo     | Tabs screenOptions should have `headerShown: false`  |
+| `textinput-keyboard-avoiding`      | warning  | expo     | TextInput should be inside KeyboardAvoidingView      |
 
 ### Liquid Glass Rules (expo-glass-effect)
 
-| Rule | Severity | Platform | Description |
-| --- | --- | --- | --- |
-| `glass-interactive-prop` | warning | expo | GlassView in pressables needs `isInteractive={true}` |
-| `glass-needs-fallback` | warning | expo | Check isLiquidGlassAvailable() before using GlassView |
-| `glass-no-opacity-animation` | warning | expo | No opacity animations on GlassView |
-| `no-border-width-on-glass` | error | expo | No borderWidth on GlassView (breaks borderRadius) |
+| Rule                         | Severity | Platform | Description                                           |
+| ---------------------------- | -------- | -------- | ----------------------------------------------------- |
+| `glass-interactive-prop`     | warning  | expo     | GlassView in pressables needs `isInteractive={true}`  |
+| `glass-needs-fallback`       | warning  | expo     | Check isLiquidGlassAvailable() before using GlassView |
+| `glass-no-opacity-animation` | warning  | expo     | No opacity animations on GlassView                    |
+| `no-border-width-on-glass`   | error    | expo     | No borderWidth on GlassView (breaks borderRadius)     |
 
 ### Next.js Rules
 
-| Rule | Severity | Platform | Description |
-| --- | --- | --- | --- |
-| `no-server-import-in-client` | error | web | "use client" files must not import server-only modules |
-| `require-use-client` | error | web | Files using client-only features must have "use client" directive |
+| Rule                         | Severity | Platform | Description                                                       |
+| ---------------------------- | -------- | -------- | ----------------------------------------------------------------- |
+| `no-module-level-new`        | error    | web      | Avoid module-level constructors that execute during SSR           |
+| `no-react-native-in-web`     | error    | web      | Do not import React Native modules from web code                  |
+| `no-server-import-in-client` | error    | web      | "use client" files must not import server-only modules            |
+| `require-use-client`         | error    | web      | Files using client-only features must have "use client" directive |
+| `ssr-browser-api-guard`      | error    | web      | Guard browser-only APIs in files that run during SSR              |
 
 ### React / JSX Rules
 
-| Rule | Severity | Platform | Description |
-| --- | --- | --- | --- |
-| `browser-api-in-useeffect` | warning | web | window/localStorage only in useEffect for SSR |
-| `fetch-response-ok-check` | warning | web, backend | Check response.ok when using fetch |
-| `no-class-components` | warning | expo, web | Use function components with hooks |
-| `no-complex-jsx-expressions` | warning | expo, web | Avoid IIFEs and complex expressions in JSX |
-| `no-inline-script-code` | error | web | Script tags should use template literals |
-| `no-react-query-missing` | warning | expo, web | Use @tanstack/react-query for data fetching |
+| Rule                         | Severity | Platform     | Description                                   |
+| ---------------------------- | -------- | ------------ | --------------------------------------------- |
+| `browser-api-in-useeffect`   | warning  | web          | window/localStorage only in useEffect for SSR |
+| `fetch-response-ok-check`    | warning  | web, backend | Check response.ok when using fetch            |
+| `no-class-components`        | warning  | expo, web    | Use function components with hooks            |
+| `no-complex-jsx-expressions` | warning  | expo, web    | Avoid IIFEs and complex expressions in JSX    |
+| `no-inline-script-code`      | error    | web          | Script tags should use template literals      |
+| `no-react-query-missing`     | warning  | expo, web    | Use @tanstack/react-query for data fetching   |
 
 ### Screen Transitions Rules (react-native-screen-transitions)
 
-| Rule | Severity | Platform | Description |
-| --- | --- | --- | --- |
-| `transition-gesture-scrollview` | warning | expo | Use Transition.ScrollView/FlatList instead of regular versions |
-| `transition-prefer-blank-stack` | warning | expo | Use Blank Stack instead of enableTransitions on Native Stack |
-| `transition-progress-range` | warning | expo | interpolate() should cover full [0, 1, 2] range including exit phase |
-| `transition-shared-tag-mismatch` | warning | expo | sharedBoundTag on Transition.Pressable must have matching Transition.View |
-| `transition-worklet-directive` | error | expo | screenStyleInterpolator functions must include "worklet" directive |
+| Rule                             | Severity | Platform | Description                                                               |
+| -------------------------------- | -------- | -------- | ------------------------------------------------------------------------- |
+| `transition-gesture-scrollview`  | warning  | expo     | Use Transition.ScrollView/FlatList instead of regular versions            |
+| `transition-prefer-blank-stack`  | warning  | expo     | Use Blank Stack instead of enableTransitions on Native Stack              |
+| `transition-progress-range`      | warning  | expo     | interpolate() should cover full [0, 1, 2] range including exit phase      |
+| `transition-shared-tag-mismatch` | warning  | expo     | sharedBoundTag on Transition.Pressable must have matching Transition.View |
+| `transition-worklet-directive`   | error    | expo     | screenStyleInterpolator functions must include "worklet" directive        |
 
 ### Tailwind CSS Rules
 
-| Rule | Severity | Platform | Description |
-| --- | --- | --- | --- |
-| `no-inline-styles` | warning | universal | Avoid inline styles, use Tailwind CSS classes instead |
-| `no-tailwind-animation-classes` | warning | web | Avoid animate-\* classes, use style jsx global instead |
+| Rule                            | Severity | Platform  | Description                                            |
+| ------------------------------- | -------- | --------- | ------------------------------------------------------ |
+| `no-inline-styles`              | warning  | universal | Avoid inline styles, use Tailwind CSS classes instead  |
+| `no-tailwind-animation-classes` | warning  | web       | Avoid animate-\* classes, use style jsx global instead |
 
 ### Backend / SQL Rules
 
-| Rule | Severity | Platform | Description |
-| --- | --- | --- | --- |
-| `no-require-statements` | error | backend | Use ES imports, not CommonJS require |
-| `no-response-json-lowercase` | warning | backend | Use Response.json() instead of new Response(JSON.stringify()) |
-| `no-sync-fs` | error | backend | Use fs.promises or fs/promises instead of sync fs methods |
-| `sql-no-nested-calls` | error | backend | Don't nest sql template tags |
+| Rule                                 | Severity | Platform | Description                                                   |
+| ------------------------------------ | -------- | -------- | ------------------------------------------------------------- |
+| `no-require-statements`              | error    | backend  | Use ES imports, not CommonJS require                          |
+| `no-response-json-lowercase`         | warning  | backend  | Use Response.json() instead of new Response(JSON.stringify()) |
+| `no-sync-fs`                         | error    | backend  | Use fs.promises or fs/promises instead of sync fs methods     |
+| `no-unrestricted-loop-in-serverless` | error    | backend  | Avoid unbounded loops that can time out serverless functions  |
+| `sql-no-nested-calls`                | error    | backend  | Don't nest sql template tags                                  |
 
 ### URL Rules
 
-| Rule | Severity | Description |
-| --- | --- | --- |
-| `url-params-must-encode` | warning | URL query param values must be wrapped in encodeURIComponent() |
+| Rule                     | Severity | Description                                                    |
+| ------------------------ | -------- | -------------------------------------------------------------- |
+| `url-params-must-encode` | warning  | URL query param values must be wrapped in encodeURIComponent() |
 
 ### Error Handling Rules
 
-| Rule | Severity | Description |
-| --- | --- | --- |
-| `catch-must-log-to-sentry` | warning | Catch blocks with logger.error/console.error must also call Sentry |
+| Rule                       | Severity | Description                                                        |
+| -------------------------- | -------- | ------------------------------------------------------------------ |
+| `catch-must-log-to-sentry` | warning  | Catch blocks with logger.error/console.error must also call Sentry |
 
 ### Code Style Rules
 
-| Rule | Severity | Platform | Description |
-| --- | --- | --- | --- |
-| `logger-error-with-err` | warning | universal | logger.error() must include { err: Error } for stack traces |
-| `no-emoji-icons` | warning | universal | Use icons from lucide-react instead of emoji characters |
-| `no-loose-equality` | warning | universal | Use === and !== instead of == and != (except == null) |
-| `no-magic-env-strings` | warning | universal | Use centralized enum for env variable names, not magic strings |
-| `no-manual-retry-loop` | warning | universal | Use a retry library instead of manual retry/polling loops |
-| `no-nested-try-catch` | warning | universal | Avoid nested try-catch blocks, extract to separate functions |
-| `no-optional-props` | warning | universal | Use `prop: T \| null` instead of `prop?: T` in interfaces |
-| `no-silent-skip` | warning | universal | Add else branch with logging instead of silently skipping |
-| `no-string-coerce-error` | warning | universal | Use JSON.stringify instead of String() for unknown caught errors |
-| `no-type-assertion` | warning | universal | Avoid `as` type casts; use type narrowing or proper types |
-| `prefer-guard-clauses` | warning | universal | Use early returns instead of nesting if statements |
-| `prefer-named-params` | warning | universal | Use object destructuring instead of positional parameters |
-| `safe-json-parse` | warning | universal | Wrap JSON.parse in try-catch to handle malformed input |
+| Rule                     | Severity | Platform  | Description                                                      |
+| ------------------------ | -------- | --------- | ---------------------------------------------------------------- |
+| `logger-error-with-err`  | warning  | universal | logger.error() must include { err: Error } for stack traces      |
+| `no-emoji-icons`         | warning  | universal | Use icons from lucide-react instead of emoji characters          |
+| `no-loose-equality`      | warning  | universal | Use === and !== instead of == and != (except == null)            |
+| `no-magic-env-strings`   | warning  | universal | Use centralized enum for env variable names, not magic strings   |
+| `no-manual-retry-loop`   | warning  | universal | Use a retry library instead of manual retry/polling loops        |
+| `no-nested-try-catch`    | warning  | universal | Avoid nested try-catch blocks, extract to separate functions     |
+| `no-optional-props`      | warning  | universal | Use `prop: T \| null` instead of `prop?: T` in interfaces        |
+| `no-silent-skip`         | warning  | universal | Add else branch with logging instead of silently skipping        |
+| `no-string-coerce-error` | warning  | universal | Use JSON.stringify instead of String() for unknown caught errors |
+| `no-type-assertion`      | warning  | universal | Avoid `as` type casts; use type narrowing or proper types        |
+| `prefer-guard-clauses`   | warning  | universal | Use early returns instead of nesting if statements               |
+| `prefer-named-params`    | warning  | universal | Use object destructuring instead of positional parameters        |
+| `prefer-promise-all`     | warning  | universal | Prefer Promise.all for independent async work in loops           |
+| `safe-json-parse`        | warning  | universal | Wrap JSON.parse in try-catch to handle malformed input           |
 
 ### General Rules
 
-| Rule | Severity | Platform | Description |
-| --- | --- | --- | --- |
-| `prefer-lucide-icons` | warning | expo, web | Prefer lucide-react/lucide-react-native icons |
+| Rule                  | Severity | Platform  | Description                                   |
+| --------------------- | -------- | --------- | --------------------------------------------- |
+| `prefer-lucide-icons` | warning  | expo, web | Prefer lucide-react/lucide-react-native icons |
 
 <!-- /AUTOGEN:RULES -->
 

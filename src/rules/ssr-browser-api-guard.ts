@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'ssr-browser-api-guard';
+
+export const meta = {
+  name: 'ssr-browser-api-guard',
+  severity: 'error' as const,
+  platforms: ['web'] as Platform[] | null,
+  category: 'Next.js',
+  description: 'Guard browser-only APIs in files that run during SSR',
+};
 
 const BROWSER_GLOBALS = [
   'window',

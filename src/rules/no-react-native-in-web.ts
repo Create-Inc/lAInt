@@ -1,8 +1,16 @@
 import traverse from '@babel/traverse';
 import type { File } from '@babel/types';
-import type { LintResult } from '../types';
+import type { LintResult, Platform } from '../types';
 
 const RULE_NAME = 'no-react-native-in-web';
+
+export const meta = {
+  name: 'no-react-native-in-web',
+  severity: 'error' as const,
+  platforms: ['web'] as Platform[] | null,
+  category: 'Next.js',
+  description: 'Do not import React Native modules from web code',
+};
 
 const REACT_NATIVE_MODULES = ['react-native', 'react-native-web'];
 
