@@ -1,0 +1,44 @@
+[
+  {
+    "id": "taskflow-web",
+    "platform": "web",
+    "source": "refactor-bench",
+    "description": "React task management component with CRUD, search, filtering, modals, themes, and persistent UI preferences.",
+    "outputFile": "app/page.tsx"
+  },
+  {
+    "id": "chat-web",
+    "platform": "web",
+    "source": "refactor-bench",
+    "description": "Realtime chat application page with auth gate, message history, typing indicators, local draft persistence, and theme switching.",
+    "outputFile": "app/page.tsx"
+  },
+  {
+    "id": "event-planner-mobile",
+    "platform": "expo",
+    "source": "refactor-bench",
+    "description": "React Native event planning app screen with event browsing, RSVP management, calendar view, category filtering, search, location display, attendee lists, event creation modal, notifications, and user profiles.",
+    "outputFile": "src/screens/HomeScreen.tsx"
+  },
+  {
+    "id": "beauty-shop-mobile",
+    "platform": "expo",
+    "source": "refactor-bench",
+    "description": "Beauty and cosmetics shopping mobile app screen with wishlist, brand discovery, product categories, search, profile access, and bottom-tab navigation.",
+    "outputFile": "src/app/(tabs)/shop.tsx"
+  },
+  {
+    "id": "wallet-api-backend",
+    "platform": "backend",
+    "source": "custom",
+    "description": "Next.js route handler for wallet transfers with request validation, balance lookup, transaction creation, retry handling, and JSON responses.",
+    "outputFile": "app/api/wallet/transfer/route.ts"
+  },
+  {
+    "id": "insurance-reports-backend",
+    "platform": "backend",
+    "source": "refactor-bench",
+    "description": "Next.js route handler for insurance report aggregation with role-based access checks, filters, conversion-rate calculations, CSV export support, and error logging.",
+    "outputFile": "app/api/reports/route.ts"
+  }
+]

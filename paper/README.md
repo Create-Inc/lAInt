@@ -25,3 +25,22 @@ The draft is intentionally framed as a research/tool paper, not a product announ
 - Human labels for whether each finding is a valid, invalid, or ambiguous violation.
 - TypeScript, framework build, web preview, mobile simulator/device preview, and runtime outcomes.
 - Repair iteration counts after lint feedback.
+
+## Prompt Grid
+
+Run a small prompt-to-code grid with Doppler-provided model keys:
+
+```bash
+doppler run --project flux-worker --config dev -- npm run eval:prompt-grid
+```
+
+Useful options:
+
+```bash
+npm run eval:prompt-grid -- --limit 2
+npm run eval:prompt-grid -- --models openai-gpt-5.5,anthropic-sonnet-4.6,google-3.1-pro
+npm run eval:prompt-grid -- --out paper/eval/results/my-run
+```
+
+The runner writes raw generated files, `results.json`, `summary.md`, and `labels.todo.jsonl`
+under `paper/eval/results/`. That directory is intentionally ignored by git.

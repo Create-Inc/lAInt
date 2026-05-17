@@ -21,6 +21,7 @@
     "lint:fix": "eslint --fix . && prettier --write .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "eval:prompt-grid": "npm run build && tsx scripts/run-prompt-grid-eval.ts",
     "sync": "tsx scripts/sync.ts",
     "sync:check": "tsx scripts/sync.ts && git diff --exit-code -- src/rules/index.ts README.md"
   },
