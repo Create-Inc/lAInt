@@ -28,7 +28,7 @@
 \begin{abstract}
 Large language model agents increasingly generate complete application code for web, mobile, and backend targets, but the failure modes of generated applications are not identical to those emphasized by traditional linters. In particular, generated React, Next.js, Expo, React Native, and serverless TypeScript projects often fail through framework-specific integration mistakes: hydration-unsafe browser APIs, missing client-component boundaries, invalid routing conventions, mobile layout constraints, unsafe serverless loops, or platform-incompatible imports. These defects may be syntactically valid, type-correct, and invisible until build, preview, device testing, or runtime.
 
-We present \emph{laint}, an agent-oriented linting system and benchmark instrument for JSX and TSX projects. Laint encodes platform-specific rules as lightweight static analyses over Babel ASTs and exposes them through a programmatic API, CLI, and agent hook. The current implementation contains 55 rules across Expo/mobile, web, and backend targets, with generated rule metadata and documentation. We describe the design principles behind agent-oriented linting, classify the rule corpus, and outline an evaluation methodology for measuring model behavior on generated application traces. Our central claim is that framework-aware lint rules can serve both as repair signals for coding agents and as a benchmark for comparing language models on generated-app correctness.
+We present \emph{laint}, an expert-curated benchmark for generated JSX and TSX applications, implemented as an agent-oriented linting system. Laint encodes platform-specific failure modes as lightweight static analyses over Babel ASTs and exposes them through a programmatic API, CLI, and agent hook. The current benchmark contains 55 rules across Expo/mobile, web, and backend targets, with generated rule metadata and documentation. We describe the design principles behind the rule corpus and outline a protocol for measuring model behavior on generated application traces. Our central claim is that framework-aware lint rules selected by human experts can serve as a benchmark for comparing language models on generated-app correctness, while also acting as repair signals for coding agents.
 \end{abstract}
 
 \section{Introduction}
@@ -37,13 +37,13 @@ AI agents can now produce multi-file applications rather than isolated snippets.
 
 Generated web and mobile applications expose a recurring class of defects that sit between syntax, type checking, and framework runtime behavior. For example, a Next.js component can be valid TypeScript while still reading \texttt{window} during server-side rendering. An Expo Router screen can be syntactically correct while using relative navigation paths that resolve incorrectly. A serverless function can pass local tests while containing an unbounded loop that is likely to time out in production. These are not merely style preferences; they are repeated integration failures in generated applications.
 
-Laint was built to target this gap. It is a compact lint rules SDK for JSX and TSX code, designed to run after an agent edits a file and return concrete violations that the agent can repair immediately. The same signal can also be used offline as a benchmark: given a fixed prompt suite and model grid, laint measures which models produce framework-specific defects, which rules they trigger, and how often those findings survive human validity labeling. Rather than trying to replace ESLint~\cite{eslint}, TypeScript~\cite{typescript}, or framework compilers, laint focuses on rules that are specific, cheap to run, and operationally tied to known generated-app failures.
+Laint was built to target this gap. It is a compact lint rules SDK for JSX and TSX code, designed to run after an agent edits a file and return concrete violations that the agent can repair immediately. More importantly for this paper, the expert-selected rule set is itself the benchmark: given a fixed prompt suite and model grid, laint measures which models produce framework-specific defects and which defect classes they trigger. The remaining human labeling task is not to decide whether these defect classes are bad; that has already been encoded in the benchmark. Instead, labeling determines whether each model output truly instantiates the reported defect. Rather than trying to replace ESLint~\cite{eslint}, TypeScript~\cite{typescript}, or framework compilers, laint focuses on rules that are specific, cheap to run, and operationally tied to known generated-app failures.
 
 This paper makes three contributions:
 
 \begin{enumerate}
   \item We define \emph{agent-oriented linting}: static analysis designed for code generation feedback loops rather than only human code review.
-  \item We describe the design of laint, a rule-based JSX/TSX linter with platform-tagged rules for Expo/mobile, web, and backend generated applications.
+  \item We describe the design of laint, a rule-based JSX/TSX benchmark with platform-tagged checks for Expo/mobile, web, and backend generated applications.
   \item We present a rule taxonomy and benchmark protocol for measuring model behavior on generated web, mobile, and backend application code.
 \end{enumerate}
 
@@ -129,18 +129,18 @@ The result should be phrased so an agent can repair it directly. For example, ``
 
 \section{Benchmark Protocol}
 
-The simplest useful benchmark is a prompt-to-code study. Given a suite of realistic app-building prompts, ask one or more language models to produce JSX/TSX files for web, mobile, and backend scenarios. Run laint over the generated files, then manually label each reported violation as valid, invalid, or ambiguous. This directly measures model behavior on framework-aware generated-app correctness: when a model emits code that laint interrupts, is the finding something a coding agent or developer should actually fix?
+The simplest useful benchmark is a prompt-to-code study. Given a suite of realistic app-building prompts, ask one or more language models to produce JSX/TSX files for web, mobile, and backend scenarios. Run laint over the generated files and count violations by model, rule, and platform. This directly measures model behavior on framework-aware generated-app correctness: which expert-selected defects does a model produce, and how often?
 
-A first-pass study can be intentionally lightweight. For each prompt-model pair, record the generated code, laint findings, enabled platform profile, and human labels. Precision is the primary metric:
+A first-pass study can be intentionally lightweight. For each prompt-model pair, record the generated code, laint findings, and enabled platform profile. Because the benchmark rules are already expert-selected failure modes, the primary raw score is the number and distribution of violations a model produces. A smaller follow-up labeling pass estimates detector precision on model outputs:
 
 \[
 \mathrm{precision} = \frac{\mathrm{valid\ violations}}{\mathrm{valid\ violations} + \mathrm{invalid\ violations}}
 \]
 
-Ambiguous findings should be reported separately rather than folded into either side. The labeled findings can also be grouped by rule and category to identify high-confidence rules, noisy rules, and platform-specific gaps.
+Here, ``valid'' means that the generated code truly instantiates the expert-defined defect reported by the rule. It does not mean that a human is re-deciding whether the rule describes a bad pattern. Ambiguous findings should be reported separately rather than folded into either side. The labeled findings can also be grouped by rule and category to identify high-confidence rules, noisy detectors, and platform-specific gaps.
 
 \paragraph{Preliminary grid.}
-As an initial smoke evaluation, we ran six prompts across three models: \texttt{openai-gpt-5.5}, \texttt{anthropic-sonnet-4.6}, and \texttt{google-3.1-pro}. The prompt set covered two web tasks, two Expo/mobile tasks, and two backend tasks. All 18 generations completed and parsed successfully. Laint reported 240 candidate violations, producing a labeling queue for the precision study described above. Table~\ref{tab:preliminary-grid} summarizes the run.
+As an initial smoke evaluation, we ran six prompts across three models: \texttt{openai-gpt-5.5}, \texttt{anthropic-sonnet-4.6}, and \texttt{google-3.1-pro}. The prompt set covered two web tasks, two Expo/mobile tasks, and two backend tasks. All 18 generations completed and parsed successfully. Laint reported 240 benchmark violations, producing a labeling queue for estimating detector precision on these model outputs. Table~\ref{tab:preliminary-grid} summarizes the run.
 
 \begin{table}[ht]
   \centering
@@ -153,14 +153,14 @@ As an initial smoke evaluation, we ran six prompts across three models: \texttt{
     Generations & 18 \\
     Parse errors & 0 \\
     Generation errors & 0 \\
-    Candidate violations & 240 \\
+    Benchmark violations & 240 \\
     \bottomrule
   \end{tabular}
-  \caption{Preliminary prompt-to-code grid before human validity labeling.}
+  \caption{Preliminary prompt-to-code benchmark run before detector-precision labeling.}
   \label{tab:preliminary-grid}
 \end{table}
 
-The most frequent candidate violations were \texttt{no-inline-styles} (51), \texttt{no-silent-skip} (34), \texttt{no-type-assertion} (33), and \texttt{no-optional-props} (30). Finding counts differed substantially by model: \texttt{anthropic-sonnet-4.6} produced 105 findings, \texttt{openai-gpt-5.5} produced 87, and \texttt{google-3.1-pro} produced 48. These counts are not yet precision estimates; they measure lint surface area before manual labeling. The next step is to label the 240 findings as valid, invalid, or ambiguous and report rule-level precision.
+The most frequent benchmark violations were \texttt{no-inline-styles} (51), \texttt{no-silent-skip} (34), \texttt{no-type-assertion} (33), and \texttt{no-optional-props} (30). Finding counts differed substantially by model: \texttt{anthropic-sonnet-4.6} produced 105 findings, \texttt{openai-gpt-5.5} produced 87, and \texttt{google-3.1-pro} produced 48. These counts are already meaningful as benchmark scores because the rules encode expert-selected defect classes. The next step is to label the 240 findings as valid, invalid, or ambiguous to estimate detector precision and report rule-level noise.
 
 A fuller benchmark should answer three model-evaluation questions.
 
@@ -168,7 +168,7 @@ A fuller benchmark should answer three model-evaluation questions.
 For each model, how often does laint identify defects before TypeScript, framework builds, preview deployment, or runtime interaction? This can be measured by replaying generated application traces and recording the earliest stage at which each model's defects are detected.
 
 \paragraph{RQ2: Precision.}
-For each model and rule category, what fraction of laint findings correspond to defects that should actually be fixed? Because agent-facing lint must be low-noise, false-positive rate is as important as recall. Precision can be estimated by manual labeling of findings across model-generated code samples or a held-out set of generated projects.
+For each model and rule category, what fraction of laint findings are true instances of the expert-defined defect class? Because agent-facing lint must be low-noise, false-positive rate is as important as recall. Precision can be estimated by manual labeling of findings across model-generated code samples or a held-out set of generated projects.
 
 \paragraph{RQ3: Repair effectiveness.}
 When violations are fed back to the same model or agent, how often does the next edit resolve the issue without introducing a new failure? This can be measured by running the same generation tasks with and without the laint hook and comparing final build success, preview success, and number of repair iterations by model.
@@ -183,7 +183,7 @@ Another tradeoff is specificity. Some laint rules encode conventions that are no
 
 \section{Threats to Validity}
 
-The current rule corpus is shaped by failures observed in one app-generation environment, so the taxonomy may not generalize to every AI coding workflow. The proposed evaluation must therefore separate rules with broad framework relevance from rules that encode Anything-specific product constraints.
+The current rule corpus is shaped by failures observed in one app-generation environment, so the taxonomy may not generalize to every AI coding workflow. The benchmark must therefore separate rules with broad framework relevance from rules that encode Anything-specific product constraints.
 
 The benchmark also risks overfitting to known failures. A held-out task set and chronological split can reduce this risk: rules should be tested on generation traces created after the rule design period or on tasks not used to derive the rule.
 
@@ -197,7 +197,7 @@ The system is also related to work on language models for code and tool-augmente
 
 \section{Conclusion}
 
-Agent-generated applications need feedback loops that catch framework-specific defects before they become preview or runtime failures. Laint demonstrates a lightweight approach: encode recurring generated-app failures as repairable JSX/TSX lint rules, tag them by platform, and run them automatically after agent edits. The same rule corpus also defines a benchmark for language models: prompt models to generate applications, measure candidate violations, label validity, and compare defect patterns and repair success across models. The current 55-rule implementation suggests that many high-value checks are small, local, and operationally grounded. The next step is to complete human labeling for the prompt grid and report model-level precision, early-detection, and repair-effectiveness results.
+Agent-generated applications need feedback loops that catch framework-specific defects before they become preview or runtime failures. Laint demonstrates a lightweight approach: encode recurring generated-app failures as repairable JSX/TSX lint rules, tag them by platform, and run them automatically after agent edits. The same expert-curated rule corpus defines a benchmark for language models: prompt models to generate applications, count benchmark violations, estimate detector precision on model outputs, and compare defect patterns and repair success across models. The current 55-rule implementation suggests that many high-value checks are small, local, and operationally grounded. The next step is to complete detector-precision labeling for the prompt grid and report model-level benchmark results.
 
 \bibliographystyle{plain}
 \bibliography{references}
