@@ -139,6 +139,29 @@ A first-pass study can be intentionally lightweight. For each prompt-model pair,
 
 Ambiguous findings should be reported separately rather than folded into either side. The labeled findings can also be grouped by rule and category to identify high-confidence rules, noisy rules, and platform-specific gaps.
 
+\paragraph{Preliminary grid.}
+As an initial smoke evaluation, we ran six prompts across three models: \texttt{openai-gpt-5.5}, \texttt{anthropic-sonnet-4.6}, and \texttt{google-3.1-pro}. The prompt set covered two web tasks, two Expo/mobile tasks, and two backend tasks. All 18 generations completed and parsed successfully. Laint reported 240 candidate violations, producing a labeling queue for the precision study described above. Table~\ref{tab:preliminary-grid} summarizes the run.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{lr}
+    \toprule
+    Metric & Value \\
+    \midrule
+    Prompts & 6 \\
+    Models & 3 \\
+    Generations & 18 \\
+    Parse errors & 0 \\
+    Generation errors & 0 \\
+    Candidate violations & 240 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Preliminary prompt-to-code grid before human validity labeling.}
+  \label{tab:preliminary-grid}
+\end{table}
+
+The most frequent candidate violations were \texttt{no-inline-styles} (51), \texttt{no-silent-skip} (34), \texttt{no-type-assertion} (33), and \texttt{no-optional-props} (30). Finding counts differed substantially by model: \texttt{anthropic-sonnet-4.6} produced 105 findings, \texttt{openai-gpt-5.5} produced 87, and \texttt{google-3.1-pro} produced 48. These counts are not yet precision estimates; they measure lint surface area before manual labeling. The next step is to label the 240 findings as valid, invalid, or ambiguous and report rule-level precision.
+
 A fuller publishable evaluation should answer three questions.
 
 \paragraph{RQ1: Early detection.}
