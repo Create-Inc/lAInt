@@ -33,6 +33,30 @@ A future tag scheme such as `benchmark/agent-oriented-linting-2026-05` or
 `paper/agent-oriented-linting-v1` would make these runs easier to cite without
 depending on floating branch names.
 
+## Reproducing Paper Numbers
+
+Every numeric claim in the draft should either be calculated from repository
+source or from a checked-in benchmark artifact.
+
+Rule corpus counts, severity counts, platform counts, and the category table are
+calculated from `src/rules/*` metadata:
+
+```bash
+npm run paper:stats
+```
+
+The preliminary prompt-grid numbers in `main.tex` are calculated from the
+archived run artifact at `paper/eval/artifacts/initial-grid/results.json`:
+
+```bash
+npm run paper:stats -- --eval paper/eval/artifacts/initial-grid/results.json
+```
+
+The generated app files under `paper/eval/results/` remain ignored because they
+are working outputs. If a benchmark run contributes numbers to a paper, archive
+the corresponding `results.json` under `paper/eval/artifacts/<run-name>/` or
+attach it to a tagged release before citing the numbers.
+
 ## Suggested Evaluation Data
 
 - A prompt suite covering web, mobile, and backend app-building tasks.
