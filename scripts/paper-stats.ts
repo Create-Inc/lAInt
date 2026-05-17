@@ -190,7 +190,9 @@ function summarizeEvalArtifact(evalPath: string) {
     name: basename(evalPath),
     prompts: promptIds.size,
     models: modelAliases.size,
-    generations: records.length,
+    gridSlots: records.length,
+    completedGenerations: records.filter((record) => isObject(record) && !record.generationError)
+      .length,
     parseErrors,
     generationErrors,
     totalFindings,
@@ -207,8 +209,9 @@ function printEvalStats(evalPath: string) {
   console.log('');
   console.log(`- Source artifact: ${evalPath}`);
   console.log(`- Prompts: ${summary.prompts}`);
-  console.log(`- Models: ${summary.models}`);
-  console.log(`- Generations: ${summary.generations}`);
+  console.log(`- Model aliases: ${summary.models}`);
+  console.log(`- Grid slots: ${summary.gridSlots}`);
+  console.log(`- Completed generations: ${summary.completedGenerations}`);
   console.log(`- Parse errors: ${summary.parseErrors}`);
   console.log(`- Generation errors: ${summary.generationErrors}`);
   console.log(`- Benchmark violations: ${summary.totalFindings}`);
@@ -229,8 +232,9 @@ function printEvalStats(evalPath: string) {
   console.log('');
   console.log('```tex');
   console.log(`    Prompts & ${summary.prompts} \\\\`);
-  console.log(`    Models & ${summary.models} \\\\`);
-  console.log(`    Generations & ${summary.generations} \\\\`);
+  console.log(`    Model aliases & ${summary.models} \\\\`);
+  console.log(`    Grid slots & ${summary.gridSlots} \\\\`);
+  console.log(`    Completed generations & ${summary.completedGenerations} \\\\`);
   console.log(`    Parse errors & ${summary.parseErrors} \\\\`);
   console.log(`    Generation errors & ${summary.generationErrors} \\\\`);
   console.log(`    Benchmark violations & ${summary.totalFindings} \\\\`);

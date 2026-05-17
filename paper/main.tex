@@ -170,8 +170,9 @@ As an initial small-scale evaluation, we ran six prompts across three models: \t
     Metric & Value \\
     \midrule
     Prompts & 6 \\
-    Models & 3 \\
-    Generations & 18 \\
+    Model aliases & 3 \\
+    Grid slots & 18 \\
+    Completed generations & 18 \\
     Parse errors & 0 \\
     Generation errors & 0 \\
     Benchmark violations & 240 \\
@@ -181,7 +182,29 @@ As an initial small-scale evaluation, we ran six prompts across three models: \t
   \label{tab:preliminary-grid}
 \end{table}
 
-The most frequent benchmark violations were \texttt{no-inline-styles} (51), \texttt{no-silent-skip} (34), \texttt{no-type-assertion} (33), and \texttt{no-optional-props} (30). Finding counts differed substantially by model: \texttt{anthropic-sonnet-4.6} produced 105 findings, \texttt{openai-gpt-5.5} produced 87, and \texttt{google-3.1-pro} produced 48. These counts are already meaningful as benchmark scores because the rules encode expert-selected defect classes. They are also descriptive signals about model style: a violation histogram can expose recurring generation habits, not just aggregate quality. The next step is to label the 240 findings as valid, invalid, or ambiguous to estimate detector precision and report rule-level noise. A recall estimate additionally requires reviewing generated files for true defect instances that laint did not report; once both precision and recall are available, the same labels can produce F1 or another F-score.
+\paragraph{Expanded grid.}
+We then ran a larger raw grid over the same six prompts and seven configured model aliases. The run artifact is included with the paper source and can be summarized with \texttt{npm run paper:stats}. The expanded run produced 476 benchmark violations across 42 grid slots. Thirty-six generations completed, two completed generations had parse errors, and all six generation errors came from \texttt{moonshot-kimi-k2.6} due provider authentication or network failures. Table~\ref{tab:expanded-grid} summarizes the raw run.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lr}
+    \toprule
+    Metric & Value \\
+    \midrule
+    Prompts & 6 \\
+    Model aliases & 7 \\
+    Grid slots & 42 \\
+    Completed generations & 36 \\
+    Parse errors & 2 \\
+    Generation errors & 6 \\
+    Benchmark violations & 476 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Expanded raw prompt-to-code benchmark run before detector-quality labeling.}
+  \label{tab:expanded-grid}
+\end{table}
+
+The most frequent benchmark violations in the expanded run were \texttt{no-inline-styles} (102), \texttt{no-silent-skip} (87), \texttt{no-type-assertion} (64), \texttt{no-emoji-icons} (37), and \texttt{no-optional-props} (29). Finding counts differed substantially by working model: \texttt{anthropic-sonnet-4.6} produced 127 findings, \texttt{anthropic-opus-4.6} produced 123, \texttt{openai-gpt-5.5} produced 78, \texttt{openai-gpt-5.4} produced 59, \texttt{google-3.1-pro} produced 47, and \texttt{google-2.5-flash} produced 42. Because \texttt{moonshot-kimi-k2.6} failed to generate code for all prompts, it should be treated as an infrastructure failure in this run rather than as a model-quality score. These counts are already meaningful as benchmark scores because the rules encode expert-selected defect classes. They are also descriptive signals about model style: a violation histogram can expose recurring generation habits, not just aggregate quality. The next step is to label the findings as valid, invalid, or ambiguous to estimate detector precision and report rule-level noise. A recall estimate additionally requires reviewing generated files for true defect instances that laint did not report; once both precision and recall are available, the same labels can produce F1 or another F-score.
 
 A fuller benchmark should answer four model-evaluation questions.
 
