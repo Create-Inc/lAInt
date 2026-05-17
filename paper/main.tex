@@ -131,16 +131,22 @@ The result should be phrased so an agent can repair it directly. For example, ``
 
 The simplest useful benchmark is a prompt-to-code study. Given a suite of realistic app-building prompts, ask one or more language models to produce JSX/TSX files for web, mobile, and backend scenarios. Run laint over the generated files and count violations by model, rule, and platform. This directly measures model behavior on framework-aware generated-app correctness: which expert-selected defects does a model produce, and how often? The same counts also describe qualitative model tendencies, such as whether a model prefers inline styles, loose type assertions, silent error handling, emoji icons, or web-centric APIs in mobile code.
 
-A first-pass study can be intentionally lightweight. For each prompt-model pair, record the generated code, laint findings, and enabled platform profile. Because the benchmark rules are already expert-selected failure modes, the primary raw score is the number and distribution of violations a model produces. A smaller follow-up labeling pass estimates detector precision on model outputs:
+A first-pass study can be intentionally lightweight. For each prompt-model pair, record the generated code, laint findings, and enabled platform profile. Because the benchmark rules are already expert-selected failure modes, the primary raw score is the number and distribution of violations a model produces. A follow-up labeling pass estimates detector quality. Precision can be estimated by labeling reported findings:
 
 \[
 \mathrm{precision} = \frac{\mathrm{valid\ violations}}{\mathrm{valid\ violations} + \mathrm{invalid\ violations}}
 \]
 
-Here, ``valid'' means that the generated code actually contains the expert-defined defect reported by the rule. It does not mean that a human is re-deciding whether the rule describes a bad pattern. Ambiguous findings should be reported separately rather than folded into either side. The labeled findings can also be grouped by rule and category to identify high-confidence rules, noisy detectors, and platform-specific gaps.
+Recall requires a different denominator: all true instances of the expert-defined defect classes, including instances laint did not report. Estimating recall therefore requires an independent review of generated files for missed defects, a seeded-defect corpus, or another oracle that can identify true instances beyond laint's own output. When that denominator is available, recall is:
+
+\[
+\mathrm{recall} = \frac{\mathrm{valid\ violations}}{\mathrm{valid\ violations} + \mathrm{missed\ violations}}
+\]
+
+Here, ``valid'' means that the generated code actually contains the expert-defined defect reported by the rule. A ``missed'' violation is a true instance of the same defect class that laint failed to report. These labels do not mean that a human is re-deciding whether the rule describes a bad pattern. Ambiguous findings and ambiguous missed cases should be reported separately rather than folded into either side. The labeled findings can also be grouped by rule and category to identify high-confidence rules, noisy detectors, and platform-specific gaps.
 
 \paragraph{Preliminary grid.}
-As an initial small-scale evaluation, we ran six prompts across three models: \texttt{openai-gpt-5.5}, \texttt{anthropic-sonnet-4.6}, and \texttt{google-3.1-pro}. The prompt set covered two web tasks, two Expo/mobile tasks, and two backend tasks. All 18 generations completed and parsed successfully. Laint reported 240 benchmark violations, producing a labeling queue for estimating detector precision on these model outputs. Table~\ref{tab:preliminary-grid} summarizes the run.
+As an initial small-scale evaluation, we ran six prompts across three models: \texttt{openai-gpt-5.5}, \texttt{anthropic-sonnet-4.6}, and \texttt{google-3.1-pro}. The prompt set covered two web tasks, two Expo/mobile tasks, and two backend tasks. All 18 generations completed and parsed successfully. Laint reported 240 benchmark violations, producing a labeling queue for estimating detector precision on these model outputs and a starting point for recall-oriented review. Table~\ref{tab:preliminary-grid} summarizes the run.
 
 \begin{table}[ht]
   \centering
@@ -156,11 +162,11 @@ As an initial small-scale evaluation, we ran six prompts across three models: \t
     Benchmark violations & 240 \\
     \bottomrule
   \end{tabular}
-  \caption{Preliminary prompt-to-code benchmark run before detector-precision labeling.}
+  \caption{Preliminary prompt-to-code benchmark run before detector-quality labeling.}
   \label{tab:preliminary-grid}
 \end{table}
 
-The most frequent benchmark violations were \texttt{no-inline-styles} (51), \texttt{no-silent-skip} (34), \texttt{no-type-assertion} (33), and \texttt{no-optional-props} (30). Finding counts differed substantially by model: \texttt{anthropic-sonnet-4.6} produced 105 findings, \texttt{openai-gpt-5.5} produced 87, and \texttt{google-3.1-pro} produced 48. These counts are already meaningful as benchmark scores because the rules encode expert-selected defect classes. They are also descriptive signals about model style: a violation histogram can expose recurring generation habits, not just aggregate quality. The next step is to label the 240 findings as valid, invalid, or ambiguous to estimate detector precision and report rule-level noise.
+The most frequent benchmark violations were \texttt{no-inline-styles} (51), \texttt{no-silent-skip} (34), \texttt{no-type-assertion} (33), and \texttt{no-optional-props} (30). Finding counts differed substantially by model: \texttt{anthropic-sonnet-4.6} produced 105 findings, \texttt{openai-gpt-5.5} produced 87, and \texttt{google-3.1-pro} produced 48. These counts are already meaningful as benchmark scores because the rules encode expert-selected defect classes. They are also descriptive signals about model style: a violation histogram can expose recurring generation habits, not just aggregate quality. The next step is to label the 240 findings as valid, invalid, or ambiguous to estimate detector precision and report rule-level noise. A recall estimate additionally requires reviewing generated files for true defect instances that laint did not report.
 
 A fuller benchmark should answer four model-evaluation questions.
 
@@ -170,8 +176,8 @@ Which framework-aware coding habits does each model exhibit? Rule distributions 
 \paragraph{RQ2: Early detection.}
 For each model, how often does laint identify defects before TypeScript, framework builds, preview deployment, or runtime interaction? This can be measured by replaying generated application traces and recording the earliest stage at which each model's defects are detected.
 
-\paragraph{RQ3: Precision.}
-For each model and rule category, what fraction of laint findings are true instances of the expert-defined defect class? Because agent-facing lint must be low-noise, false-positive rate is as important as recall. Precision can be estimated by manual labeling of findings across model-generated code samples or a held-out set of generated projects.
+\paragraph{RQ3: Precision and recall.}
+For each model and rule category, what fraction of laint findings are true instances of the expert-defined defect class, and what fraction of all true instances does laint report? Precision measures noise in the agent feedback loop. Recall measures coverage of the expert-defined defect classes. Precision can be estimated by manual labeling of reported findings; recall requires a labeled corpus that also includes missed defects, created through independent manual review, seeded examples, or runtime/build failures traced back to rule classes.
 
 \paragraph{RQ4: Repair effectiveness.}
 When violations are fed back to the same model or agent, how often does the next edit resolve the issue without introducing a new failure? This can be measured by running the same generation tasks with and without the laint hook and comparing final build success, preview success, and number of repair iterations by model.
@@ -200,7 +206,7 @@ The system is also related to work on language models for code and tool-augmente
 
 \section{Conclusion}
 
-Agent-generated applications need feedback loops that catch framework-specific defects before they become preview or runtime failures. Laint demonstrates a lightweight approach: encode recurring generated-app failures as repairable JSX/TSX lint rules, tag them by platform, and run them automatically after agent edits. The same expert-curated rule corpus defines a benchmark for language models: prompt models to generate applications, count benchmark violations, estimate detector precision on model outputs, and compare defect patterns and repair success across models. The current 55-rule implementation suggests that many high-value checks are small, file-local, and operationally grounded. The next step is to complete detector-precision labeling for the preliminary model grid and report model-level benchmark results.
+Agent-generated applications need feedback loops that catch framework-specific defects before they become preview or runtime failures. Laint demonstrates a lightweight approach: encode recurring generated-app failures as repairable JSX/TSX lint rules, tag them by platform, and run them automatically after agent edits. The same expert-curated rule corpus defines a benchmark for language models: prompt models to generate applications, count benchmark violations, estimate detector precision and recall on model outputs, and compare defect patterns and repair success across models. The current 55-rule implementation suggests that many high-value checks are small, file-local, and operationally grounded. The next step is to complete detector-quality labeling for the preliminary model grid and report model-level benchmark results.
 
 \bibliographystyle{plain}
 \bibliography{references}
