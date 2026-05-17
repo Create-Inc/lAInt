@@ -184,11 +184,11 @@ The main tradeoff in laint is that some rules are intentionally local and heuris
 
 Another tradeoff is specificity. Some laint rules encode conventions that are not universal across all React or Expo projects. Platform tags and explicit configuration modes address this by letting users choose a rule set appropriate to the generated project. This is especially important for V2 filesystem projects, where TSX, Next.js server rendering, and Lambda deployment constraints differ from older JSX-oriented generated apps.
 
-\section{Threats to Validity}
+\section{Limitations}
 
-The current rule corpus is shaped by failures observed in one app-generation environment, so the taxonomy may not generalize to every AI coding workflow. The benchmark must therefore separate rules with broad framework relevance from rules that encode Anything-specific product constraints.
+The current rule corpus is shaped by failures observed in one app-generation environment, so the taxonomy may not generalize to every AI coding workflow. A mature benchmark should therefore separate rules with broad framework relevance from rules that encode Anything-specific product constraints.
 
-The benchmark also risks overfitting to known failures. A held-out task set and chronological split can reduce this risk: rules should be tested on generation traces created after the rule design period or on tasks not used to derive the rule.
+The benchmark can also overfit to known failures. A held-out task set and chronological split can reduce this risk: rules should be tested on generation traces created after the rule design period or on tasks not used to derive the rule.
 
 Finally, measuring repair effectiveness is sensitive to the underlying agent model and prompt. A useful benchmark should report the agent configuration and avoid claiming that laint improves all coding agents equally.
 
