@@ -129,18 +129,28 @@ The result should be phrased so an agent can repair it directly. For example, ``
 
 \section{Evaluation Plan}
 
-A publishable evaluation should answer three questions.
+The simplest useful evaluation is a prompt-to-code study. Given a suite of realistic app-building prompts, ask one or more language models to produce JSX/TSX files for web, mobile, and backend scenarios. Run laint over the generated files, then manually label each reported violation as valid, invalid, or ambiguous. This directly measures the core question for an agent-facing linter: when laint interrupts generated code, is it pointing at something the agent should actually fix?
+
+A first-pass study can be intentionally lightweight. For each prompt-model pair, record the generated code, laint findings, enabled platform profile, and human labels. Precision is the primary metric:
+
+\[
+\mathrm{precision} = \frac{\mathrm{valid\ violations}}{\mathrm{valid\ violations} + \mathrm{invalid\ violations}}
+\]
+
+Ambiguous findings should be reported separately rather than folded into either side. The labeled findings can also be grouped by rule and category to identify high-confidence rules, noisy rules, and platform-specific gaps.
+
+A fuller publishable evaluation should answer three questions.
 
 \paragraph{RQ1: Early detection.}
 How often does laint identify defects before TypeScript, framework builds, preview deployment, or runtime interaction? This can be measured by replaying generated application traces and recording the earliest stage at which each defect is detected.
 
 \paragraph{RQ2: Precision.}
-What fraction of laint findings correspond to defects that should actually be fixed? Because agent-facing lint must be low-noise, false-positive rate is as important as recall. Precision can be estimated by manual labeling of findings across a held-out set of generated projects.
+What fraction of laint findings correspond to defects that should actually be fixed? Because agent-facing lint must be low-noise, false-positive rate is as important as recall. Precision can be estimated by manual labeling of findings across model-generated code samples or a held-out set of generated projects.
 
 \paragraph{RQ3: Repair effectiveness.}
 When violations are fed back to the coding agent, how often does the next edit resolve the issue without introducing a new failure? This can be measured by running the same generation tasks with and without the laint hook and comparing final build success, preview success, and number of repair iterations.
 
-We propose evaluating on a corpus of generated applications from JSX/TSX app-building tasks spanning web, mobile, and backend targets. For each task, the experiment should capture edit traces, lint output, type-check results, build results, runtime logs, mobile simulator or device-preview outcomes where applicable, and final human or automated acceptance labels. The primary comparison is not against ESLint as a replacement, but against the baseline stack of TypeScript, ESLint where present, framework builds, and runtime preview without agent-oriented rules.
+We propose evaluating on a corpus of generated applications from JSX/TSX app-building tasks spanning web, mobile, and backend targets. For each task, the experiment should capture prompts, model identity, generated code, lint output, type-check results, build results, runtime logs, mobile simulator or device-preview outcomes where applicable, and final human or automated acceptance labels. The primary comparison is not against ESLint as a replacement, but against the baseline stack of TypeScript, ESLint where present, framework builds, and runtime preview without agent-oriented rules.
 
 \section{Discussion}
 
