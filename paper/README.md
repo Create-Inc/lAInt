@@ -12,10 +12,26 @@ The draft is intentionally framed as a research/tool paper, not a product announ
 
 - Add real authors and affiliations.
 - Decide whether this targets arXiv only, a workshop, or both.
-- Run the prompt-to-code precision evaluation described in `main.tex`.
+- Run the prompt-to-code detector-quality evaluation described in `main.tex`.
 - Replace the evaluation-plan section with measured results.
 - Add citations to relevant program-repair and LLM-code-generation work.
 - Build the PDF from `main.tex` and inspect it before submission.
+
+## Version Pinning
+
+This draft pins its rule counts and preliminary benchmark results to `main` commit
+`6a60a0295955ee6cc1d639c88955ea50722e3516` from 2026-05-14.
+
+For future papers or follow-up benchmark runs, record:
+
+- The exact `main` commit or benchmark tag used for the laint rule corpus.
+- The prompt suite version.
+- The model IDs and provider versions used for generation.
+- The run date and output directory.
+
+A future tag scheme such as `benchmark/agent-oriented-linting-2026-05` or
+`paper/agent-oriented-linting-v1` would make these runs easier to cite without
+depending on floating branch names.
 
 ## Suggested Evaluation Data
 
@@ -23,6 +39,7 @@ The draft is intentionally framed as a research/tool paper, not a product announ
 - Generated JSX/TSX outputs from one or more LLMs.
 - Laint findings for each generated output.
 - Human labels for whether each finding is a valid, invalid, or ambiguous violation.
+- Missed-defect labels for recall, when an independently reviewed corpus is available.
 - TypeScript, framework build, web preview, mobile simulator/device preview, and runtime outcomes.
 - Repair iteration counts after lint feedback.
 

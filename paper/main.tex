@@ -73,6 +73,9 @@ The hook interface is important because it shifts linting from a terminal comman
 
 The current laint implementation contains 55 rules and 59 test files. Table~\ref{tab:categories} summarizes the rule corpus by category. The corpus contains 15 error-level rules and 40 warning-level rules. Seventeen rules are universal, while the remaining rules target Expo, web, backend, or a combination of platforms.
 
+\paragraph{Version pinning.}
+All rule counts and preliminary benchmark results in this paper are tied to a fixed repository state: \texttt{main} commit \texttt{6a60a0295955ee6cc1d639c88955ea50722e3516}, dated 2026-05-14. Future benchmark reports should cite either an immutable commit hash or a purpose-named git tag so that later rule additions, rule rewrites, or prompt-suite changes do not change the meaning of previously reported results.
+
 \begin{table}[ht]
   \centering
   \begin{tabular}{lr}
