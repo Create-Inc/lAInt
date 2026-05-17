@@ -23,4 +23,3 @@ The draft is intentionally framed as a research/tool paper, not a product announ
 - TypeScript, framework build, preview, and runtime outcomes.
 - Manual labels for whether each laint finding was a true defect.
 - Repair iteration counts after lint feedback.
-
