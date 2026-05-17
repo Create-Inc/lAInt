@@ -6,7 +6,7 @@ This directory contains an initial arXiv-style paper draft for laint.
 
 The draft is intentionally framed as a research/tool paper, not a product announcement. The strongest publishable angle is:
 
-> Agent-oriented linting for generated JSX/TSX applications catches framework-specific failures earlier than conventional build/type/runtime feedback.
+> Agent-oriented linting for generated JSX/TSX applications catches framework-specific web, mobile, and backend failures earlier than conventional build/type/runtime feedback.
 
 ## Before Submission
 
@@ -20,6 +20,6 @@ The draft is intentionally framed as a research/tool paper, not a product announ
 ## Suggested Evaluation Data
 
 - Generated app edit traces with and without the laint hook.
-- TypeScript, framework build, preview, and runtime outcomes.
+- TypeScript, framework build, web preview, mobile simulator/device preview, and runtime outcomes.
 - Manual labels for whether each laint finding was a true defect.
 - Repair iteration counts after lint feedback.

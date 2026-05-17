@@ -17,7 +17,7 @@
 
 \emergencystretch=2em
 
-\title{Agent-Oriented Linting for Generated Web Applications}
+\title{Agent-Oriented Linting for Generated Cross-Platform Applications}
 \author{Daniel Chen \\ Anything}
 \date{}
 
@@ -26,9 +26,9 @@
 \maketitle
 
 \begin{abstract}
-Large language model agents increasingly generate complete application code, but the failure modes of generated applications are not identical to those emphasized by traditional linters. In particular, generated React, Next.js, Expo, and serverless TypeScript projects often fail through framework-specific integration mistakes: hydration-unsafe browser APIs, missing client-component boundaries, invalid routing conventions, mobile layout constraints, unsafe serverless loops, or platform-incompatible imports. These defects may be syntactically valid, type-correct, and invisible until build, preview, or runtime.
+Large language model agents increasingly generate complete application code for web, mobile, and backend targets, but the failure modes of generated applications are not identical to those emphasized by traditional linters. In particular, generated React, Next.js, Expo, React Native, and serverless TypeScript projects often fail through framework-specific integration mistakes: hydration-unsafe browser APIs, missing client-component boundaries, invalid routing conventions, mobile layout constraints, unsafe serverless loops, or platform-incompatible imports. These defects may be syntactically valid, type-correct, and invisible until build, preview, device testing, or runtime.
 
-We present \emph{laint}, an agent-oriented linting system for JSX and TSX projects. Laint encodes platform-specific rules as lightweight static analyses over Babel ASTs and exposes them through a programmatic API, CLI, and agent hook. The current implementation contains 55 rules across Expo, web, and backend targets, with generated rule metadata and documentation. We describe the design principles behind agent-oriented linting, classify the rule corpus, and outline an evaluation methodology for measuring early defect detection and false-positive rates on generated application traces. Our central claim is that linters for agentic code generation should prioritize actionable, framework-aware repair signals over broad style enforcement.
+We present \emph{laint}, an agent-oriented linting system for JSX and TSX projects. Laint encodes platform-specific rules as lightweight static analyses over Babel ASTs and exposes them through a programmatic API, CLI, and agent hook. The current implementation contains 55 rules across Expo/mobile, web, and backend targets, with generated rule metadata and documentation. We describe the design principles behind agent-oriented linting, classify the rule corpus, and outline an evaluation methodology for measuring early defect detection and false-positive rates on generated application traces. Our central claim is that linters for agentic code generation should prioritize actionable, framework-aware repair signals over broad style enforcement.
 \end{abstract}
 
 \section{Introduction}
@@ -43,7 +43,7 @@ This paper makes three contributions:
 
 \begin{enumerate}
   \item We define \emph{agent-oriented linting}: static analysis designed for code generation feedback loops rather than only human code review.
-  \item We describe the design of laint, a rule-based JSX/TSX linter with platform-tagged rules for Expo, web, and backend generated applications.
+  \item We describe the design of laint, a rule-based JSX/TSX linter with platform-tagged rules for Expo/mobile, web, and backend generated applications.
   \item We present a rule taxonomy and an evaluation plan for measuring whether agent-oriented linting catches failures earlier than existing build, type, and runtime checks.
 \end{enumerate}
 
@@ -51,7 +51,7 @@ This paper makes three contributions:
 
 Generated applications fail in ways that reflect both the target framework and the generator's learned habits. In internal use, many defects were not exotic compiler problems. They were small but consequential choices: using a browser API in a server-rendered module, importing React Native primitives into a web project, omitting a \texttt{response.ok} check, using unsupported animation patterns, or forgetting an Expo-specific layout guard. These problems are easy to fix once identified, but expensive when discovered only after preview, deployment, or user interaction.
 
-Traditional lint rules can catch some of these issues, especially generic JavaScript and React anti-patterns. The gap is that generated applications combine multiple fast-moving platform contracts. A rule can be valuable even when it is too product-specific, framework-specific, or generation-specific to belong in a general-purpose lint preset. Agent-oriented linting treats such specificity as a feature: if a rule captures a recurring generated-app defect and produces a reliable repair signal, it is worth encoding.
+Traditional lint rules can catch some of these issues, especially generic JavaScript and React anti-patterns. The gap is that generated applications combine multiple fast-moving platform contracts, including mobile contracts that are not exercised by a browser-only preview. A rule can be valuable even when it is too product-specific, framework-specific, or generation-specific to belong in a general-purpose lint preset. Agent-oriented linting treats such specificity as a feature: if a rule captures a recurring generated-app defect and produces a reliable repair signal, it is worth encoding.
 
 \section{System Design}
 
@@ -102,11 +102,11 @@ The categories reflect several distinct failure modes.
 \paragraph{Rendering and hydration.}
 Rendering rules target mismatches between React~\cite{react} code that appears valid locally and framework constraints imposed by server rendering or client-component boundaries. Examples include guards for browser-only APIs, checks that browser APIs move into effects, required client-component directives, and checks against server-only imports from client files.
 
-\paragraph{Platform compatibility.}
-Rules such as \texttt{no-react-native-in-web}, \texttt{expo-image-import}, and \texttt{no-safeareaview} prevent generated code from mixing incompatible platform APIs. These are common in agent-written code because examples for web and native React are semantically similar but operationally distinct.
+\paragraph{Platform compatibility and mobile UI constraints.}
+Mobile and platform-compatibility rules prevent generated code from mixing incompatible APIs or violating layout constraints. Examples include checks for web/native import boundaries, Expo image imports, safe-area handling, keyboard avoidance around text inputs, and bottom padding for native tab screens. These are common in agent-written code because examples for web and native React are semantically similar but operationally distinct.
 
 \paragraph{Framework conventions.}
-Expo~\cite{expo}, Next.js~\cite{nextjs}, Tailwind, and screen-transition rules encode conventions that are not always enforced by the compiler. Examples include absolute route paths, tab header configuration, worklet directives, transition progress ranges, and animation class restrictions.
+Expo~\cite{expo}, Next.js~\cite{nextjs}, Tailwind, and screen-transition rules encode conventions that are not always enforced by the compiler. Examples include absolute route paths, tab header configuration, worklet directives, transition progress ranges, shared-transition tag matching, and animation class restrictions.
 
 \paragraph{Runtime robustness.}
 Backend and error-handling rules target defects that often pass static type checks: missing \texttt{response.ok} checks, synchronous filesystem calls, nested SQL template calls, unrestricted loops in serverless contexts, missing structured error fields, and unsafe JSON parsing.
@@ -140,7 +140,7 @@ What fraction of laint findings correspond to defects that should actually be fi
 \paragraph{RQ3: Repair effectiveness.}
 When violations are fed back to the coding agent, how often does the next edit resolve the issue without introducing a new failure? This can be measured by running the same generation tasks with and without the laint hook and comparing final build success, preview success, and number of repair iterations.
 
-We propose evaluating on a corpus of generated applications from JSX/TSX app-building tasks. For each task, the experiment should capture edit traces, lint output, type-check results, build results, runtime logs, and final human or automated acceptance labels. The primary comparison is not against ESLint as a replacement, but against the baseline stack of TypeScript, ESLint where present, framework builds, and runtime preview without agent-oriented rules.
+We propose evaluating on a corpus of generated applications from JSX/TSX app-building tasks spanning web, mobile, and backend targets. For each task, the experiment should capture edit traces, lint output, type-check results, build results, runtime logs, mobile simulator or device-preview outcomes where applicable, and final human or automated acceptance labels. The primary comparison is not against ESLint as a replacement, but against the baseline stack of TypeScript, ESLint where present, framework builds, and runtime preview without agent-oriented rules.
 
 \section{Discussion}
 
@@ -158,7 +158,7 @@ Finally, measuring repair effectiveness is sensitive to the underlying agent mod
 
 \section{Related Work}
 
-Laint builds on a long tradition of static analysis and linting for JavaScript and TypeScript, including ESLint~\cite{eslint}, TypeScript~\cite{typescript}, Babel-based transforms~\cite{babel}, and framework-specific lint plugins for React~\cite{react}, Next.js~\cite{nextjs}, and Expo~\cite{expo}. The distinctive focus is not the AST machinery itself, but the placement of linting inside an agentic code-generation loop and the emphasis on generated-app failure modes.
+Laint builds on a long tradition of static analysis and linting for JavaScript and TypeScript, including ESLint~\cite{eslint}, TypeScript~\cite{typescript}, Babel-based transforms~\cite{babel}, and framework-specific lint plugins for React~\cite{react}, Next.js~\cite{nextjs}, and Expo~\cite{expo}. The distinctive focus is not the AST machinery itself, but the placement of linting inside an agentic code-generation loop and the emphasis on generated-app failure modes across web, mobile, and backend surfaces.
 
 The system is also related to work on language models for code and tool-augmented refinement. Codex demonstrated that large language models can synthesize code from natural-language prompts~\cite{codex}. Self-Refine and Reflexion study iterative feedback loops in which generated outputs are improved using critique, execution signals, or verbal feedback~\cite{selfrefine,reflexion}. Laint contributes a practical instance of this feedback-loop pattern specialized for modern JSX/TSX application frameworks: instead of relying only on tests or compiler output, it supplies small, framework-aware repair signals immediately after file edits.
 
