@@ -191,6 +191,13 @@ The expanded tables make the raw benchmark results easier to inspect than a sing
 
 These counts are benchmark scores because the rules encode expert-selected defect classes, but they are still raw detector outputs. The next step is to label findings as valid, invalid, or ambiguous to estimate detector precision and report rule-level noise. A recall estimate additionally requires reviewing generated files for true defect instances that laint did not report; once both precision and recall are available, the same labels can produce F1 or another F-score. Because \texttt{moonshot-kimi-k2.6} failed to generate code for all prompts, it should be treated as an infrastructure failure in this run rather than as a model-quality score.
 
+\paragraph{Repair-loop pilot.}
+We also ran a repair-loop pilot on the same expanded-grid outputs. For each completed baseline generation, we fed the current code and laint diagnostics back to the same model and asked for a revised complete file. We repeated this for up to three turns, stopping early when the file had zero laint findings and no parse error. Table~\ref{tab:repair-summary} summarizes the repair loop; Tables~\ref{tab:repair-by-model} and~\ref{tab:repair-by-prompt} break the same run down by model and prompt.
+
+\input{generated/repair-loop-tables.tex}
+
+The repair loop reduced raw benchmark violations from 476 to 101, fixing 375 reported violations, or 78.8\%, within three turns. It also reduced parse errors from two to one. Eighteen of the 36 repairable records reached zero findings and no parse error, and seven reached that state after a single repair turn. The result is not uniformly positive: web and backend prompts repaired more reliably than the Expo/mobile prompts, and \texttt{event-planner-mobile} barely improved overall. This makes repair effectiveness a useful second benchmark axis: the one-shot score measures which defects a model emits, while the repair-loop score measures how well the same model can use localized static feedback.
+
 A fuller benchmark should answer four model-evaluation questions.
 
 \paragraph{RQ1: Behavioral profiles.}
@@ -219,7 +226,7 @@ The current rule corpus is shaped by failures observed in one app-generation env
 
 The benchmark can also overfit to known failures. A held-out task set and chronological split can reduce this risk: rules should be tested on generation traces created after the rule design period, or on tasks that were not used when deciding which rules belonged in laint.
 
-Finally, measuring repair effectiveness is sensitive to the underlying agent model and prompt. A useful benchmark should report the agent configuration and avoid claiming that laint improves all coding agents equally.
+Finally, measuring repair effectiveness is sensitive to the underlying agent model and prompt. The repair-loop pilot measures improvement against the laint benchmark itself; it does not by itself prove that the repaired application builds, previews, or satisfies the user's intent. A useful benchmark should report the agent configuration and pair laint-repair outcomes with build, runtime, and human acceptance labels before claiming that laint improves all coding agents equally.
 
 \section{Related Work}
 
@@ -229,7 +236,7 @@ The system is also related to work on language models for code and tool-augmente
 
 \section{Conclusion}
 
-Agent-generated applications need feedback loops that catch framework-specific defects before they become preview or runtime failures. Laint demonstrates a lightweight approach: encode recurring generated-app failures as repairable JSX/TSX lint rules, tag them by platform, and run them automatically after agent edits. The same expert-curated rule corpus defines a benchmark for language models: prompt models to generate applications, count benchmark violations, estimate detector precision, recall, and F-score on model outputs, and compare defect patterns and repair success across models. The current 55-rule implementation suggests that many high-value checks are small, file-local, and operationally grounded. The next step is to complete detector-quality labeling for the expanded model grid and report labeled model-level benchmark results.
+Agent-generated applications need feedback loops that catch framework-specific defects before they become preview or runtime failures. Laint demonstrates a lightweight approach: encode recurring generated-app failures as repairable JSX/TSX lint rules, tag them by platform, and run them automatically after agent edits. The same expert-curated rule corpus defines a benchmark for language models: prompt models to generate applications, count benchmark violations, feed the violations back as repair signals, estimate detector precision, recall, and F-score on model outputs, and compare defect patterns and repair success across models. The current 55-rule implementation suggests that many high-value checks are small, file-local, and operationally grounded. The next step is to complete detector-quality labeling for the expanded model grid and report labeled model-level benchmark results.
 
 \bibliographystyle{plain}
 \bibliography{references}

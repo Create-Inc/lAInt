@@ -65,15 +65,24 @@ The expanded-grid tables included by `main.tex` are generated from that artifact
 npm run paper:tables
 ```
 
-This rewrites `paper/generated/full-grid-tables.tex`, which is checked in so the
-paper source can build directly while still keeping the table values
-reproducible from the archived JSON artifact.
+This rewrites `paper/generated/full-grid-tables.tex` and
+`paper/generated/repair-loop-tables.tex`, which are checked in so the paper
+source can build directly while still keeping the table values reproducible from
+the archived JSON artifacts.
 
 This raw run covers 6 prompts and 7 configured model aliases. Moonshot/Kimi failed
 all 6 generations due provider authentication/network errors, so use this
 artifact as raw evidence rather than final paper numbers until the Moonshot
 credential path is fixed or the reported model grid is explicitly scoped to the
 6 working model aliases.
+
+The repair-loop pilot uses the full-grid artifact as its baseline and is archived
+at `paper/eval/artifacts/repair-loop-2026-05-27/results.json`. It can be rerun
+with Doppler-provided model keys:
+
+```bash
+doppler run --project flux-worker --config dev -- npm run eval:repair-loop -- --max-turns 3 --out paper/eval/results/repair-loop-2026-05-27
+```
 
 The generated app files under `paper/eval/results/` remain ignored because they
 are working outputs. If a benchmark run contributes numbers to a paper, archive

@@ -19,9 +19,16 @@ const PAPER_CATEGORY_ORDER = [
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const options: { evalPath: string | null; latexOut: string | null } = {
+  const options: {
+    evalPath: string | null;
+    latexOut: string | null;
+    repairEvalPath: string | null;
+    repairLatexOut: string | null;
+  } = {
     evalPath: null,
     latexOut: null,
+    repairEvalPath: null,
+    repairLatexOut: null,
   };
 
   for (let index = 0; index < args.length; index += 1) {
@@ -33,6 +40,12 @@ function parseArgs() {
       index += 1;
     } else if (arg === '--latex-out' && next) {
       options.latexOut = next;
+      index += 1;
+    } else if (arg === '--repair-eval' && next) {
+      options.repairEvalPath = next;
+      index += 1;
+    } else if (arg === '--repair-latex-out' && next) {
+      options.repairLatexOut = next;
       index += 1;
     } else if (arg === '--help') {
       printHelp();
@@ -52,11 +65,15 @@ Options:
   --eval <path>   Include prompt-grid stats from a results.json artifact.
   --latex-out <path>
                   Write generated LaTeX tables for the prompt-grid artifact.
+  --repair-eval <path>
+                  Include repair-loop stats from a results.json artifact.
+  --repair-latex-out <path>
+                  Write generated LaTeX tables for the repair-loop artifact.
 
 Examples:
   npm run paper:stats
   npm run paper:stats -- --eval paper/eval/artifacts/initial-grid/results.json
-  npm run paper:stats -- --eval paper/eval/artifacts/full-grid-2026-05-17/results.json --latex-out paper/generated/full-grid-tables.tex
+  npm run paper:stats -- --eval paper/eval/artifacts/full-grid-2026-05-17/results.json --latex-out paper/generated/full-grid-tables.tex --repair-eval paper/eval/artifacts/repair-loop-2026-05-27/results.json --repair-latex-out paper/generated/repair-loop-tables.tex
 `);
 }
 
@@ -531,6 +548,245 @@ function renderLatexTables(evalPath: string) {
   return lines.join('\n') + '\n';
 }
 
+type RepairStats = {
+  records: number;
+  attempted: number;
+  skippedGenerationErrors: number;
+  baselineFindings: number;
+  finalFindings: number;
+  fixedFindings: number;
+  baselineParseErrors: number;
+  finalParseErrors: number;
+  cleanAfterOne: number;
+  cleanFinal: number;
+  repairGenerationErrors: number;
+  turnsToClean: number[];
+  platform: string | null;
+};
+
+function emptyRepairStats(platform: string | null): RepairStats {
+  return {
+    records: 0,
+    attempted: 0,
+    skippedGenerationErrors: 0,
+    baselineFindings: 0,
+    finalFindings: 0,
+    fixedFindings: 0,
+    baselineParseErrors: 0,
+    finalParseErrors: 0,
+    cleanAfterOne: 0,
+    cleanFinal: 0,
+    repairGenerationErrors: 0,
+    turnsToClean: [],
+    platform,
+  };
+}
+
+function isCleanRepairState({
+  lintResults,
+  parseError,
+}: {
+  lintResults: unknown[];
+  parseError: unknown;
+}) {
+  return lintResults.length === 0 && !parseError;
+}
+
+function addRepairRecordStats({
+  stats,
+  record,
+}: {
+  stats: RepairStats;
+  record: Record<string, unknown>;
+}) {
+  const skippedReason = getString(record.skippedReason);
+  stats.records += 1;
+  if (skippedReason === 'generation-error') {
+    stats.skippedGenerationErrors += 1;
+    return;
+  }
+
+  const baseline = isObject(record.baseline) ? record.baseline : {};
+  const baselineLintResults = getArray(baseline.lintResults);
+  const finalLintResults = getArray(record.finalLintResults);
+  const baselineParseError = baseline.parseError;
+  const finalParseError = record.finalParseError;
+  const turns = getArray(record.turns);
+  const firstTurn = isObject(turns[0]) ? turns[0] : null;
+  const turnsToClean =
+    typeof record.turnsToClean === 'number' && Number.isFinite(record.turnsToClean)
+      ? record.turnsToClean
+      : null;
+
+  if (skippedReason === null) {
+    stats.attempted += 1;
+  }
+  stats.baselineFindings += baselineLintResults.length;
+  stats.finalFindings += finalLintResults.length;
+  stats.fixedFindings += baselineLintResults.length - finalLintResults.length;
+  if (baselineParseError) {
+    stats.baselineParseErrors += 1;
+  }
+  if (finalParseError) {
+    stats.finalParseErrors += 1;
+  }
+  if (
+    firstTurn &&
+    isCleanRepairState({
+      lintResults: getArray(firstTurn.lintResults),
+      parseError: firstTurn.parseError,
+    })
+  ) {
+    stats.cleanAfterOne += 1;
+  }
+  if (isCleanRepairState({ lintResults: finalLintResults, parseError: finalParseError })) {
+    stats.cleanFinal += 1;
+  }
+  if (skippedReason === null && record.finalGenerationError) {
+    stats.repairGenerationErrors += 1;
+  }
+  if (turnsToClean !== null) {
+    stats.turnsToClean.push(turnsToClean);
+  }
+}
+
+function summarizeRepairArtifact(repairEvalPath: string) {
+  const parsed: unknown = JSON.parse(readFileSync(repairEvalPath, 'utf8'));
+  if (!isObject(parsed)) {
+    throw new Error(`${repairEvalPath}: expected object`);
+  }
+
+  const records = getArray(parsed.records).filter(isObject);
+  const byModel = new Map<string, RepairStats>();
+  const byPrompt = new Map<string, RepairStats>();
+  const overall = emptyRepairStats(null);
+  let maxRepairTurns = 0;
+
+  for (const record of records) {
+    const prompt = isObject(record.prompt) ? record.prompt : {};
+    const model = isObject(record.model) ? record.model : {};
+    const promptId = getString(prompt.id) ?? 'unknown-prompt';
+    const promptPlatform = getString(prompt.platform);
+    const modelAlias = getString(model.alias) ?? 'unknown-model';
+    const turns = getArray(record.turns);
+    maxRepairTurns = Math.max(maxRepairTurns, turns.length);
+
+    addRepairRecordStats({ stats: overall, record });
+
+    const modelStats = byModel.get(modelAlias) ?? emptyRepairStats(null);
+    byModel.set(modelAlias, modelStats);
+    addRepairRecordStats({ stats: modelStats, record });
+
+    const promptStats = byPrompt.get(promptId) ?? emptyRepairStats(promptPlatform);
+    byPrompt.set(promptId, promptStats);
+    addRepairRecordStats({ stats: promptStats, record });
+  }
+
+  return {
+    name: basename(repairEvalPath),
+    maxRepairTurns,
+    ...overall,
+    byModel: [...byModel.entries()].sort(
+      (a, b) =>
+        b[1].attempted - a[1].attempted ||
+        b[1].fixedFindings - a[1].fixedFindings ||
+        a[0].localeCompare(b[0]),
+    ),
+    byPrompt: [...byPrompt.entries()].sort(
+      (a, b) => b[1].fixedFindings - a[1].fixedFindings || a[0].localeCompare(b[0]),
+    ),
+  };
+}
+
+function formatAverageTurns(turnsToClean: number[]) {
+  if (turnsToClean.length === 0) {
+    return '$--$';
+  }
+  return (turnsToClean.reduce((sum, turns) => sum + turns, 0) / turnsToClean.length).toFixed(1);
+}
+
+function renderRepairLatexTables(repairEvalPath: string) {
+  const summary = summarizeRepairArtifact(repairEvalPath);
+  const lines: string[] = [];
+
+  lines.push('% Generated by npm run paper:tables.');
+  lines.push(`% Source artifact: ${repairEvalPath}`);
+  lines.push('');
+  lines.push('\\begin{table}[ht]');
+  lines.push('  \\centering');
+  lines.push('  \\begin{tabular}{lr}');
+  lines.push('    \\toprule');
+  lines.push('    Metric & Value \\\\');
+  lines.push('    \\midrule');
+  lines.push(`    Baseline records & ${summary.records} \\\\`);
+  lines.push(`    Skipped baseline generation errors & ${summary.skippedGenerationErrors} \\\\`);
+  lines.push(`    Attempted repairs & ${summary.attempted} \\\\`);
+  lines.push(`    Maximum repair turns & ${summary.maxRepairTurns} \\\\`);
+  lines.push(`    Baseline benchmark violations & ${summary.baselineFindings} \\\\`);
+  lines.push(`    Final benchmark violations & ${summary.finalFindings} \\\\`);
+  lines.push(
+    `    Violations fixed & ${summary.fixedFindings} (${formatPercent(summary.fixedFindings, summary.baselineFindings)}) \\\\`,
+  );
+  lines.push(`    Baseline parse errors & ${summary.baselineParseErrors} \\\\`);
+  lines.push(`    Final parse errors & ${summary.finalParseErrors} \\\\`);
+  lines.push(`    Clean after one turn & ${summary.cleanAfterOne} \\\\`);
+  lines.push(`    Clean after max turns & ${summary.cleanFinal} \\\\`);
+  lines.push(`    Repair generation errors & ${summary.repairGenerationErrors} \\\\`);
+  lines.push('    \\bottomrule');
+  lines.push('  \\end{tabular}');
+  lines.push(
+    '  \\caption{Repair-loop pilot over the expanded grid. Each attempted repair feeds laint diagnostics back to the same model for up to three turns.}',
+  );
+  lines.push('  \\label{tab:repair-summary}');
+  lines.push('\\end{table}');
+  lines.push('');
+  lines.push('\\begin{table}[ht]');
+  lines.push('  \\centering');
+  lines.push('  \\scriptsize');
+  lines.push('  \\begin{tabular}{lrrrrrr}');
+  lines.push('    \\toprule');
+  lines.push('    Model & Initial & Final & Fixed & Clean 1-turn & Clean final & Avg. turns \\\\');
+  lines.push('    \\midrule');
+  for (const [modelAlias, stats] of summary.byModel) {
+    if (stats.attempted === 0) {
+      continue;
+    }
+    lines.push(
+      `    ${latexEscape(displayModelAlias(modelAlias))} & ${stats.baselineFindings} & ${stats.finalFindings} & ${formatPercent(stats.fixedFindings, stats.baselineFindings)} & ${stats.cleanAfterOne}/${stats.attempted} & ${stats.cleanFinal}/${stats.attempted} & ${formatAverageTurns(stats.turnsToClean)} \\\\`,
+    );
+  }
+  lines.push('    \\bottomrule');
+  lines.push('  \\end{tabular}');
+  lines.push(
+    '  \\caption{Repair-loop outcomes by model, excluding baseline generation failures. Average turns is computed over runs that reached zero findings and no parse error.}',
+  );
+  lines.push('  \\label{tab:repair-by-model}');
+  lines.push('\\end{table}');
+  lines.push('');
+  lines.push('\\begin{table}[ht]');
+  lines.push('  \\centering');
+  lines.push('  \\scriptsize');
+  lines.push('  \\begin{tabular}{llrrrr}');
+  lines.push('    \\toprule');
+  lines.push('    Prompt & Platform & Initial & Final & Fixed & Clean final \\\\');
+  lines.push('    \\midrule');
+  for (const [promptId, stats] of summary.byPrompt) {
+    if (stats.attempted === 0) {
+      continue;
+    }
+    lines.push(
+      `    ${latexTexttt(promptId)} & ${latexEscape(stats.platform ?? 'unknown')} & ${stats.baselineFindings} & ${stats.finalFindings} & ${formatPercent(stats.fixedFindings, stats.baselineFindings)} & ${stats.cleanFinal}/${stats.attempted} \\\\`,
+    );
+  }
+  lines.push('    \\bottomrule');
+  lines.push('  \\end{tabular}');
+  lines.push('  \\caption{Repair-loop outcomes by prompt and platform.}');
+  lines.push('  \\label{tab:repair-by-prompt}');
+  lines.push('\\end{table}');
+
+  return lines.join('\n') + '\n';
+}
+
 function printEvalStats(evalPath: string) {
   const summary = summarizeEvalArtifact(evalPath);
 
@@ -571,6 +827,45 @@ function printEvalStats(evalPath: string) {
   console.log('```');
 }
 
+function printRepairStats(repairEvalPath: string) {
+  const summary = summarizeRepairArtifact(repairEvalPath);
+
+  console.log('');
+  console.log('## Repair Loop Evaluation');
+  console.log('');
+  console.log(`- Source artifact: ${repairEvalPath}`);
+  console.log(`- Baseline records: ${summary.records}`);
+  console.log(`- Attempted repairs: ${summary.attempted}`);
+  console.log(`- Skipped generation errors: ${summary.skippedGenerationErrors}`);
+  console.log(`- Maximum repair turns: ${summary.maxRepairTurns}`);
+  console.log(`- Baseline benchmark violations: ${summary.baselineFindings}`);
+  console.log(`- Final benchmark violations: ${summary.finalFindings}`);
+  console.log(
+    `- Violations fixed: ${summary.fixedFindings} (${formatPercent(summary.fixedFindings, summary.baselineFindings)})`,
+  );
+  console.log(`- Baseline parse errors: ${summary.baselineParseErrors}`);
+  console.log(`- Final parse errors: ${summary.finalParseErrors}`);
+  console.log(`- Clean after one turn: ${summary.cleanAfterOne}`);
+  console.log(`- Clean after max turns: ${summary.cleanFinal}`);
+  console.log(`- Repair generation errors: ${summary.repairGenerationErrors}`);
+  console.log('');
+  console.log('### Repair By Model');
+  console.log('');
+  for (const [model, stats] of summary.byModel) {
+    console.log(
+      `- ${model}: ${stats.baselineFindings} -> ${stats.finalFindings}, clean ${stats.cleanFinal}/${stats.attempted}`,
+    );
+  }
+  console.log('');
+  console.log('### Repair By Prompt');
+  console.log('');
+  for (const [prompt, stats] of summary.byPrompt) {
+    console.log(
+      `- ${prompt}: ${stats.baselineFindings} -> ${stats.finalFindings}, clean ${stats.cleanFinal}/${stats.attempted}`,
+    );
+  }
+}
+
 const options = parseArgs();
 printRuleStats();
 if (options.evalPath) {
@@ -580,5 +875,14 @@ if (options.evalPath) {
     writeFileSync(options.latexOut, renderLatexTables(options.evalPath));
     console.log('');
     console.log(`Wrote LaTeX tables to ${options.latexOut}`);
+  }
+}
+if (options.repairEvalPath) {
+  printRepairStats(options.repairEvalPath);
+  if (options.repairLatexOut) {
+    mkdirSync(dirname(options.repairLatexOut), { recursive: true });
+    writeFileSync(options.repairLatexOut, renderRepairLatexTables(options.repairEvalPath));
+    console.log('');
+    console.log(`Wrote repair LaTeX tables to ${options.repairLatexOut}`);
   }
 }
