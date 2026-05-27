@@ -1,4 +1,66 @@
 {
+  "metadata": {
+    "runName": "full-grid-2026-05-17",
+    "artifactDate": "2026-05-17",
+    "sourceCommit": "6a60a0295955ee6cc1d639c88955ea50722e3516",
+    "runner": "scripts/run-prompt-grid-eval.ts",
+    "promptsPath": "paper/eval/prompts.json",
+    "promptIds": [
+      "taskflow-web",
+      "chat-web",
+      "event-planner-mobile",
+      "beauty-shop-mobile",
+      "wallet-api-backend",
+      "insurance-reports-backend"
+    ],
+    "modelAliases": [
+      "openai-gpt-5.5",
+      "openai-gpt-5.4",
+      "anthropic-sonnet-4.6",
+      "anthropic-opus-4.6",
+      "google-3.1-pro",
+      "google-2.5-flash",
+      "moonshot-kimi-k2.6"
+    ],
+    "models": [
+      {
+        "alias": "openai-gpt-5.5",
+        "provider": "openai",
+        "model": "gpt-5.5"
+      },
+      {
+        "alias": "openai-gpt-5.4",
+        "provider": "openai",
+        "model": "gpt-5.4-2026-03-05"
+      },
+      {
+        "alias": "anthropic-sonnet-4.6",
+        "provider": "anthropic",
+        "model": "claude-sonnet-4-6"
+      },
+      {
+        "alias": "anthropic-opus-4.6",
+        "provider": "anthropic",
+        "model": "claude-opus-4-6"
+      },
+      {
+        "alias": "google-3.1-pro",
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview"
+      },
+      {
+        "alias": "google-2.5-flash",
+        "provider": "google",
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "alias": "moonshot-kimi-k2.6",
+        "provider": "moonshot",
+        "model": "kimi-k2.6"
+      }
+    ],
+    "maxTokens": 12000
+  },
   "summary": {
     "generations": 42,
     "totalFindings": 476,

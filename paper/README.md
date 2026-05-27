@@ -19,7 +19,7 @@ The draft is intentionally framed as a research/tool paper, not a product announ
 
 ## Version Pinning
 
-This draft pins its rule counts and preliminary benchmark results to `main` commit
+This draft pins its rule counts and reported benchmark artifacts to `main` commit
 `6a60a0295955ee6cc1d639c88955ea50722e3516` from 2026-05-14.
 
 For future papers or follow-up benchmark runs, record:
@@ -77,8 +77,10 @@ credential path is fixed or the reported model grid is explicitly scoped to the
 6 working model aliases.
 
 The repair-loop pilot uses the full-grid artifact as its baseline and is archived
-at `paper/eval/artifacts/repair-loop-2026-05-27/results.json`. It can be rerun
-with Doppler-provided model keys:
+at `paper/eval/artifacts/repair-loop-2026-05-27/results.json`. The archived JSON
+artifact is the exact source for the current paper tables. The command below
+creates a fresh stochastic rerun with Doppler-provided model keys; it should not
+be expected to reproduce byte-identical outputs:
 
 ```bash
 doppler run --project flux-worker --config dev -- npm run eval:repair-loop -- --max-turns 3 --out paper/eval/results/repair-loop-2026-05-27
@@ -87,17 +89,20 @@ doppler run --project flux-worker --config dev -- npm run eval:repair-loop -- --
 The generated app files under `paper/eval/results/` remain ignored because they
 are working outputs. If a benchmark run contributes numbers to a paper, archive
 the corresponding `results.json` under `paper/eval/artifacts/<run-name>/` or
-attach it to a tagged release before citing the numbers.
+attach it to a tagged release before citing the numbers. Archived artifacts
+should include top-level `metadata` with the run name, artifact date, source
+commit, runner script, prompt IDs, model aliases, model IDs, and token/turn
+limits.
 
 ## Suggested Evaluation Data
 
 - A prompt suite covering web, mobile, and backend app-building tasks.
 - Generated JSX/TSX outputs from one or more LLMs.
 - Laint findings for each generated output.
-- Human labels for whether each finding is a valid, invalid, or ambiguous violation.
+- Human labels for whether each finding is valid, invalid, or ambiguous.
 - Missed-defect labels for recall, when an independently reviewed corpus is available.
 - TypeScript, framework build, web preview, mobile simulator/device preview, and runtime outcomes.
-- Diagnostic-compliance outcomes after lint feedback: fixed violations, turns to a clean lint state, new violations, parse errors, and repair iteration counts.
+- Diagnostic-compliance outcomes after lint feedback: net finding reduction, rule-level resolved findings, newly introduced findings, turns to a lint-clean state, parse errors, and repair iteration counts.
 
 ## Prompt Grid
 

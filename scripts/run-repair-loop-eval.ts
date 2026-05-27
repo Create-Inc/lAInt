@@ -52,6 +52,23 @@ interface RepairRecord {
   turnsToClean: number | null;
 }
 
+interface RepairModelStats {
+  records: number;
+  attempted: number;
+  skippedGenerationErrors: number;
+  baselineFindings: number;
+  finalFindings: number;
+  netReducedFindings: number;
+  resolvedRuleFindings: number;
+  introducedRuleFindings: number;
+  baselineParseErrors: number;
+  finalParseErrors: number;
+  cleanAfterOne: number;
+  cleanFinal: number;
+  repairGenerationErrors: number;
+  turnsToClean: number[];
+}
+
 type LintJsxCode = (code: string, config: { platform: Platform }) => LintResult[];
 
 let cachedLintJsxCode: LintJsxCode | null = null;
@@ -356,6 +373,76 @@ function isClean({
   return lintResults.length === 0 && parseError === null;
 }
 
+function countRules(lintResults: LintResult[]) {
+  const counts = new Map<string, number>();
+  for (const result of lintResults) {
+    counts.set(result.rule, (counts.get(result.rule) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function compareRuleMultisets({
+  baselineLintResults,
+  finalLintResults,
+}: {
+  baselineLintResults: LintResult[];
+  finalLintResults: LintResult[];
+}) {
+  const baselineCounts = countRules(baselineLintResults);
+  const finalCounts = countRules(finalLintResults);
+  const rules = new Set([...baselineCounts.keys(), ...finalCounts.keys()]);
+  let resolved = 0;
+  let introduced = 0;
+
+  for (const rule of rules) {
+    const baselineCount = baselineCounts.get(rule) ?? 0;
+    const finalCount = finalCounts.get(rule) ?? 0;
+    if (baselineCount > finalCount) {
+      resolved += baselineCount - finalCount;
+    } else if (finalCount > baselineCount) {
+      introduced += finalCount - baselineCount;
+    }
+  }
+
+  return { resolved, introduced };
+}
+
+function emptyRepairModelStats(): RepairModelStats {
+  return {
+    records: 0,
+    attempted: 0,
+    skippedGenerationErrors: 0,
+    baselineFindings: 0,
+    finalFindings: 0,
+    netReducedFindings: 0,
+    resolvedRuleFindings: 0,
+    introducedRuleFindings: 0,
+    baselineParseErrors: 0,
+    finalParseErrors: 0,
+    cleanAfterOne: 0,
+    cleanFinal: 0,
+    repairGenerationErrors: 0,
+    turnsToClean: [],
+  };
+}
+
+function summarizeRuleComparison(records: RepairRecord[]) {
+  return records.reduce(
+    (summary, record) => {
+      const comparison = compareRuleMultisets({
+        baselineLintResults: record.baseline.lintResults,
+        finalLintResults: record.finalLintResults,
+      });
+
+      return {
+        resolved: summary.resolved + comparison.resolved,
+        introduced: summary.introduced + comparison.introduced,
+      };
+    },
+    { resolved: 0, introduced: 0 },
+  );
+}
+
 async function lintCode({ code, platform }: { code: string; platform: Platform }) {
   try {
     const lintJsxCode = await getLintJsxCode();
@@ -503,6 +590,7 @@ async function runRepairRecord({
 function summarize(records: RepairRecord[]) {
   const repairableRecords = records.filter((record) => record.skippedReason !== 'generation-error');
   const attemptedRecords = records.filter((record) => record.skippedReason === null);
+  const ruleComparison = summarizeRuleComparison(repairableRecords);
   const baselineFindings = repairableRecords.reduce(
     (sum, record) => sum + record.baseline.lintResults.length,
     0,
@@ -511,37 +599,10 @@ function summarize(records: RepairRecord[]) {
     (sum, record) => sum + record.finalLintResults.length,
     0,
   );
-  const byModel = new Map<
-    string,
-    {
-      records: number;
-      attempted: number;
-      skippedGenerationErrors: number;
-      baselineFindings: number;
-      finalFindings: number;
-      baselineParseErrors: number;
-      finalParseErrors: number;
-      cleanAfterOne: number;
-      cleanFinal: number;
-      repairGenerationErrors: number;
-      turnsToClean: number[];
-    }
-  >();
+  const byModel = new Map<string, RepairModelStats>();
 
   for (const record of records) {
-    const stats = byModel.get(record.model.alias) ?? {
-      records: 0,
-      attempted: 0,
-      skippedGenerationErrors: 0,
-      baselineFindings: 0,
-      finalFindings: 0,
-      baselineParseErrors: 0,
-      finalParseErrors: 0,
-      cleanAfterOne: 0,
-      cleanFinal: 0,
-      repairGenerationErrors: 0,
-      turnsToClean: [],
-    };
+    const stats = byModel.get(record.model.alias) ?? emptyRepairModelStats();
     byModel.set(record.model.alias, stats);
 
     stats.records += 1;
@@ -551,6 +612,13 @@ function summarize(records: RepairRecord[]) {
     }
     stats.baselineFindings += record.baseline.lintResults.length;
     stats.finalFindings += record.finalLintResults.length;
+    stats.netReducedFindings += record.baseline.lintResults.length - record.finalLintResults.length;
+    const recordRuleComparison = compareRuleMultisets({
+      baselineLintResults: record.baseline.lintResults,
+      finalLintResults: record.finalLintResults,
+    });
+    stats.resolvedRuleFindings += recordRuleComparison.resolved;
+    stats.introducedRuleFindings += recordRuleComparison.introduced;
     if (record.baseline.parseError) {
       stats.baselineParseErrors += 1;
     }
@@ -588,7 +656,9 @@ function summarize(records: RepairRecord[]) {
       .length,
     baselineFindings,
     finalFindings,
-    fixedFindings: baselineFindings - finalFindings,
+    netReducedFindings: baselineFindings - finalFindings,
+    resolvedRuleFindings: ruleComparison.resolved,
+    introducedRuleFindings: ruleComparison.introduced,
     baselineParseErrors: repairableRecords.filter((record) => record.baseline.parseError).length,
     finalParseErrors: repairableRecords.filter((record) => record.finalParseError).length,
     cleanAfterOne: records.filter(
@@ -645,7 +715,9 @@ function buildMarkdownSummary({
     `- Skipped generation errors: ${summary.skippedGenerationErrors}`,
     `- Baseline findings: ${summary.baselineFindings}`,
     `- Final findings: ${summary.finalFindings}`,
-    `- Fixed findings: ${summary.fixedFindings}`,
+    `- Net finding reduction: ${summary.netReducedFindings}`,
+    `- Rule-level findings resolved: ${summary.resolvedRuleFindings}`,
+    `- Rule-level findings introduced: ${summary.introducedRuleFindings}`,
     `- Baseline parse errors: ${summary.baselineParseErrors}`,
     `- Final parse errors: ${summary.finalParseErrors}`,
     `- Clean after one turn: ${summary.cleanAfterOne}`,
@@ -678,6 +750,26 @@ function buildMarkdownSummary({
   }
 
   return `${lines.join('\n')}\n`;
+}
+
+function buildRunMetadata({
+  options,
+  baselineRecords,
+}: {
+  options: ReturnType<typeof parseArgs>;
+  baselineRecords: BaselineRecord[];
+}) {
+  return {
+    runName: path.basename(options.outDir),
+    generatedAt: new Date().toISOString(),
+    runner: 'scripts/run-repair-loop-eval.ts',
+    outDir: options.outDir,
+    baselineArtifact: options.inputPath,
+    baselineRecords: baselineRecords.length,
+    modelAliases: [...new Set(baselineRecords.map((record) => record.model.alias))],
+    maxTurns: options.maxTurns,
+    maxTokens: options.maxTokens,
+  };
 }
 
 async function main() {
@@ -714,9 +806,10 @@ async function main() {
   }
 
   const summary = summarize(records);
+  const metadata = buildRunMetadata({ options, baselineRecords });
   await writeFile(
     path.join(options.outDir, 'results.json'),
-    JSON.stringify({ summary, records }, null, 2),
+    JSON.stringify({ metadata, summary, records }, null, 2),
   );
   await writeFile(
     path.join(options.outDir, 'summary.md'),

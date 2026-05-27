@@ -1,4 +1,61 @@
 {
+  "metadata": {
+    "runName": "repair-loop-2026-05-27",
+    "artifactDate": "2026-05-27",
+    "sourceCommit": "6a60a0295955ee6cc1d639c88955ea50722e3516",
+    "runner": "scripts/run-repair-loop-eval.ts",
+    "baselineArtifact": "paper/eval/artifacts/full-grid-2026-05-17/results.json",
+    "baselineRunName": "full-grid-2026-05-17",
+    "baselineRecords": 42,
+    "modelAliases": [
+      "openai-gpt-5.5",
+      "openai-gpt-5.4",
+      "anthropic-sonnet-4.6",
+      "anthropic-opus-4.6",
+      "google-3.1-pro",
+      "google-2.5-flash",
+      "moonshot-kimi-k2.6"
+    ],
+    "models": [
+      {
+        "alias": "openai-gpt-5.5",
+        "provider": "openai",
+        "model": "gpt-5.5"
+      },
+      {
+        "alias": "openai-gpt-5.4",
+        "provider": "openai",
+        "model": "gpt-5.4-2026-03-05"
+      },
+      {
+        "alias": "anthropic-sonnet-4.6",
+        "provider": "anthropic",
+        "model": "claude-sonnet-4-6"
+      },
+      {
+        "alias": "anthropic-opus-4.6",
+        "provider": "anthropic",
+        "model": "claude-opus-4-6"
+      },
+      {
+        "alias": "google-3.1-pro",
+        "provider": "google",
+        "model": "gemini-3.1-pro-preview"
+      },
+      {
+        "alias": "google-2.5-flash",
+        "provider": "google",
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "alias": "moonshot-kimi-k2.6",
+        "provider": "moonshot",
+        "model": "kimi-k2.6"
+      }
+    ],
+    "maxTurns": 3,
+    "maxTokens": 12000
+  },
   "summary": {
     "records": 42,
     "repairableRecords": 36,
@@ -6,7 +63,9 @@
     "skippedGenerationErrors": 6,
     "baselineFindings": 476,
     "finalFindings": 101,
-    "fixedFindings": 375,
+    "netReducedFindings": 375,
+    "resolvedRuleFindings": 445,
+    "introducedRuleFindings": 70,
     "baselineParseErrors": 2,
     "finalParseErrors": 1,
     "cleanAfterOne": 7,
@@ -19,6 +78,9 @@
         "skippedGenerationErrors": 0,
         "baselineFindings": 78,
         "finalFindings": 8,
+        "netReducedFindings": 70,
+        "resolvedRuleFindings": 78,
+        "introducedRuleFindings": 8,
         "baselineParseErrors": 0,
         "finalParseErrors": 0,
         "cleanAfterOne": 3,
@@ -33,6 +95,9 @@
         "skippedGenerationErrors": 0,
         "baselineFindings": 59,
         "finalFindings": 6,
+        "netReducedFindings": 53,
+        "resolvedRuleFindings": 53,
+        "introducedRuleFindings": 0,
         "baselineParseErrors": 1,
         "finalParseErrors": 0,
         "cleanAfterOne": 1,
@@ -47,6 +112,9 @@
         "skippedGenerationErrors": 0,
         "baselineFindings": 127,
         "finalFindings": 63,
+        "netReducedFindings": 64,
+        "resolvedRuleFindings": 119,
+        "introducedRuleFindings": 55,
         "baselineParseErrors": 0,
         "finalParseErrors": 0,
         "cleanAfterOne": 0,
@@ -61,6 +129,9 @@
         "skippedGenerationErrors": 0,
         "baselineFindings": 123,
         "finalFindings": 11,
+        "netReducedFindings": 112,
+        "resolvedRuleFindings": 114,
+        "introducedRuleFindings": 2,
         "baselineParseErrors": 0,
         "finalParseErrors": 0,
         "cleanAfterOne": 1,
@@ -75,6 +146,9 @@
         "skippedGenerationErrors": 0,
         "baselineFindings": 47,
         "finalFindings": 5,
+        "netReducedFindings": 42,
+        "resolvedRuleFindings": 44,
+        "introducedRuleFindings": 2,
         "baselineParseErrors": 0,
         "finalParseErrors": 0,
         "cleanAfterOne": 2,
@@ -89,6 +163,9 @@
         "skippedGenerationErrors": 0,
         "baselineFindings": 42,
         "finalFindings": 8,
+        "netReducedFindings": 34,
+        "resolvedRuleFindings": 37,
+        "introducedRuleFindings": 3,
         "baselineParseErrors": 1,
         "finalParseErrors": 1,
         "cleanAfterOne": 0,
@@ -103,6 +180,9 @@
         "skippedGenerationErrors": 6,
         "baselineFindings": 0,
         "finalFindings": 0,
+        "netReducedFindings": 0,
+        "resolvedRuleFindings": 0,
+        "introducedRuleFindings": 0,
         "baselineParseErrors": 0,
         "finalParseErrors": 0,
         "cleanAfterOne": 0,

@@ -459,6 +459,32 @@ function buildMarkdownSummary({
   return `${lines.join('\n')}\n`;
 }
 
+function buildRunMetadata({
+  options,
+  prompts,
+  models,
+}: {
+  options: ReturnType<typeof parseArgs>;
+  prompts: PromptCase[];
+  models: ModelConfig[];
+}) {
+  return {
+    runName: path.basename(options.outDir),
+    generatedAt: new Date().toISOString(),
+    runner: 'scripts/run-prompt-grid-eval.ts',
+    outDir: options.outDir,
+    promptsPath: options.promptsPath,
+    promptIds: prompts.map((prompt) => prompt.id),
+    modelAliases: models.map((model) => model.alias),
+    models: models.map((model) => ({
+      alias: model.alias,
+      provider: model.provider,
+      model: model.model,
+    })),
+    maxTokens: options.maxTokens,
+  };
+}
+
 async function main() {
   const options = parseArgs();
   const prompts = await loadPrompts(options.promptsPath, options.limit);
@@ -488,9 +514,10 @@ async function main() {
   }
 
   const summary = summarize(records);
+  const metadata = buildRunMetadata({ options, prompts, models });
   await writeFile(
     path.join(options.outDir, 'results.json'),
-    JSON.stringify({ summary, records }, null, 2),
+    JSON.stringify({ metadata, summary, records }, null, 2),
   );
   await writeFile(path.join(options.outDir, 'labels.todo.jsonl'), buildLabelsTodo(records));
   await writeFile(

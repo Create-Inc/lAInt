@@ -433,7 +433,7 @@ function renderLatexTables(evalPath: string) {
   lines.push(`    Completed generations & ${summary.completedGenerations} \\\\`);
   lines.push(`    Parse errors & ${summary.parseErrors} \\\\`);
   lines.push(`    Generation errors & ${summary.generationErrors} \\\\`);
-  lines.push(`    Benchmark violations & ${summary.totalFindings} \\\\`);
+  lines.push(`    Reported findings & ${summary.totalFindings} \\\\`);
   lines.push('    \\bottomrule');
   lines.push('  \\end{tabular}');
   lines.push(
@@ -503,7 +503,7 @@ function renderLatexTables(evalPath: string) {
   lines.push('    \\bottomrule');
   lines.push('  \\end{tabular}');
   lines.push(
-    '  \\caption{Most frequent expanded-grid benchmark violations by rule. The top twelve rules account for most raw findings.}',
+    '  \\caption{Most frequent expanded-grid reported findings by rule. The top twelve rules account for most raw findings.}',
   );
   lines.push('  \\label{tab:expanded-by-rule}');
   lines.push('\\end{table}');
@@ -554,7 +554,9 @@ type RepairStats = {
   skippedGenerationErrors: number;
   baselineFindings: number;
   finalFindings: number;
-  fixedFindings: number;
+  netReducedFindings: number;
+  resolvedRuleFindings: number;
+  introducedRuleFindings: number;
   baselineParseErrors: number;
   finalParseErrors: number;
   cleanAfterOne: number;
@@ -571,7 +573,9 @@ function emptyRepairStats(platform: string | null): RepairStats {
     skippedGenerationErrors: 0,
     baselineFindings: 0,
     finalFindings: 0,
-    fixedFindings: 0,
+    netReducedFindings: 0,
+    resolvedRuleFindings: 0,
+    introducedRuleFindings: 0,
     baselineParseErrors: 0,
     finalParseErrors: 0,
     cleanAfterOne: 0,
@@ -592,6 +596,47 @@ function isCleanRepairState({
   return lintResults.length === 0 && !parseError;
 }
 
+function countRules(lintResults: unknown[]) {
+  const counts = new Map<string, number>();
+  for (const result of lintResults) {
+    if (!isObject(result)) {
+      continue;
+    }
+    const rule = getString(result.rule);
+    if (!rule) {
+      continue;
+    }
+    counts.set(rule, (counts.get(rule) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function compareRuleMultisets({
+  baselineLintResults,
+  finalLintResults,
+}: {
+  baselineLintResults: unknown[];
+  finalLintResults: unknown[];
+}) {
+  const baselineCounts = countRules(baselineLintResults);
+  const finalCounts = countRules(finalLintResults);
+  const rules = new Set([...baselineCounts.keys(), ...finalCounts.keys()]);
+  let resolved = 0;
+  let introduced = 0;
+
+  for (const rule of rules) {
+    const baselineCount = baselineCounts.get(rule) ?? 0;
+    const finalCount = finalCounts.get(rule) ?? 0;
+    if (baselineCount > finalCount) {
+      resolved += baselineCount - finalCount;
+    } else if (finalCount > baselineCount) {
+      introduced += finalCount - baselineCount;
+    }
+  }
+
+  return { resolved, introduced };
+}
+
 function addRepairRecordStats({
   stats,
   record,
@@ -609,6 +654,10 @@ function addRepairRecordStats({
   const baseline = isObject(record.baseline) ? record.baseline : {};
   const baselineLintResults = getArray(baseline.lintResults);
   const finalLintResults = getArray(record.finalLintResults);
+  const ruleComparison = compareRuleMultisets({
+    baselineLintResults,
+    finalLintResults,
+  });
   const baselineParseError = baseline.parseError;
   const finalParseError = record.finalParseError;
   const turns = getArray(record.turns);
@@ -623,7 +672,9 @@ function addRepairRecordStats({
   }
   stats.baselineFindings += baselineLintResults.length;
   stats.finalFindings += finalLintResults.length;
-  stats.fixedFindings += baselineLintResults.length - finalLintResults.length;
+  stats.netReducedFindings += baselineLintResults.length - finalLintResults.length;
+  stats.resolvedRuleFindings += ruleComparison.resolved;
+  stats.introducedRuleFindings += ruleComparison.introduced;
   if (baselineParseError) {
     stats.baselineParseErrors += 1;
   }
@@ -689,11 +740,11 @@ function summarizeRepairArtifact(repairEvalPath: string) {
     byModel: [...byModel.entries()].sort(
       (a, b) =>
         b[1].attempted - a[1].attempted ||
-        b[1].fixedFindings - a[1].fixedFindings ||
+        b[1].netReducedFindings - a[1].netReducedFindings ||
         a[0].localeCompare(b[0]),
     ),
     byPrompt: [...byPrompt.entries()].sort(
-      (a, b) => b[1].fixedFindings - a[1].fixedFindings || a[0].localeCompare(b[0]),
+      (a, b) => b[1].netReducedFindings - a[1].netReducedFindings || a[0].localeCompare(b[0]),
     ),
   };
 }
@@ -722,11 +773,13 @@ function renderRepairLatexTables(repairEvalPath: string) {
   lines.push(`    Skipped baseline generation errors & ${summary.skippedGenerationErrors} \\\\`);
   lines.push(`    Attempted repairs & ${summary.attempted} \\\\`);
   lines.push(`    Maximum repair turns & ${summary.maxRepairTurns} \\\\`);
-  lines.push(`    Baseline benchmark violations & ${summary.baselineFindings} \\\\`);
-  lines.push(`    Final benchmark violations & ${summary.finalFindings} \\\\`);
+  lines.push(`    Baseline reported findings & ${summary.baselineFindings} \\\\`);
+  lines.push(`    Final reported findings & ${summary.finalFindings} \\\\`);
   lines.push(
-    `    Violations fixed & ${summary.fixedFindings} (${formatPercent(summary.fixedFindings, summary.baselineFindings)}) \\\\`,
+    `    Net finding reduction & ${summary.netReducedFindings} (${formatPercent(summary.netReducedFindings, summary.baselineFindings)}) \\\\`,
   );
+  lines.push(`    Rule-level findings resolved & ${summary.resolvedRuleFindings} \\\\`);
+  lines.push(`    Rule-level findings introduced & ${summary.introducedRuleFindings} \\\\`);
   lines.push(`    Baseline parse errors & ${summary.baselineParseErrors} \\\\`);
   lines.push(`    Final parse errors & ${summary.finalParseErrors} \\\\`);
   lines.push(`    Clean after one turn & ${summary.cleanAfterOne} \\\\`);
@@ -745,20 +798,20 @@ function renderRepairLatexTables(repairEvalPath: string) {
   lines.push('  \\scriptsize');
   lines.push('  \\begin{tabular}{lrrrrrr}');
   lines.push('    \\toprule');
-  lines.push('    Model & Initial & Final & Fixed & Clean 1-turn & Clean final & Avg. turns \\\\');
+  lines.push('    Model & Initial & Final & Net red. & New & Clean final & Avg. turns \\\\');
   lines.push('    \\midrule');
   for (const [modelAlias, stats] of summary.byModel) {
     if (stats.attempted === 0) {
       continue;
     }
     lines.push(
-      `    ${latexEscape(displayModelAlias(modelAlias))} & ${stats.baselineFindings} & ${stats.finalFindings} & ${formatPercent(stats.fixedFindings, stats.baselineFindings)} & ${stats.cleanAfterOne}/${stats.attempted} & ${stats.cleanFinal}/${stats.attempted} & ${formatAverageTurns(stats.turnsToClean)} \\\\`,
+      `    ${latexEscape(displayModelAlias(modelAlias))} & ${stats.baselineFindings} & ${stats.finalFindings} & ${formatPercent(stats.netReducedFindings, stats.baselineFindings)} & ${stats.introducedRuleFindings} & ${stats.cleanFinal}/${stats.attempted} & ${formatAverageTurns(stats.turnsToClean)} \\\\`,
     );
   }
   lines.push('    \\bottomrule');
   lines.push('  \\end{tabular}');
   lines.push(
-    '  \\caption{Diagnostic-compliance outcomes by model, excluding baseline generation failures. Average turns is computed over runs that reached zero findings and no parse error.}',
+    '  \\caption{Diagnostic-compliance outcomes by model, excluding baseline generation failures. Net red. is net reported-finding reduction; New counts rule-level findings introduced during repair. Average turns is computed over runs that reached zero findings and no parse error.}',
   );
   lines.push('  \\label{tab:repair-by-model}');
   lines.push('\\end{table}');
@@ -768,19 +821,21 @@ function renderRepairLatexTables(repairEvalPath: string) {
   lines.push('  \\scriptsize');
   lines.push('  \\begin{tabular}{llrrrr}');
   lines.push('    \\toprule');
-  lines.push('    Prompt & Platform & Initial & Final & Fixed & Clean final \\\\');
+  lines.push('    Prompt & Platform & Initial & Final & Net red. & New \\\\');
   lines.push('    \\midrule');
   for (const [promptId, stats] of summary.byPrompt) {
     if (stats.attempted === 0) {
       continue;
     }
     lines.push(
-      `    ${latexTexttt(promptId)} & ${latexEscape(stats.platform ?? 'unknown')} & ${stats.baselineFindings} & ${stats.finalFindings} & ${formatPercent(stats.fixedFindings, stats.baselineFindings)} & ${stats.cleanFinal}/${stats.attempted} \\\\`,
+      `    ${latexTexttt(promptId)} & ${latexEscape(stats.platform ?? 'unknown')} & ${stats.baselineFindings} & ${stats.finalFindings} & ${formatPercent(stats.netReducedFindings, stats.baselineFindings)} & ${stats.introducedRuleFindings} \\\\`,
     );
   }
   lines.push('    \\bottomrule');
   lines.push('  \\end{tabular}');
-  lines.push('  \\caption{Diagnostic-compliance outcomes by prompt and platform.}');
+  lines.push(
+    '  \\caption{Diagnostic-compliance outcomes by prompt and platform. New counts rule-level findings introduced during repair.}',
+  );
   lines.push('  \\label{tab:repair-by-prompt}');
   lines.push('\\end{table}');
 
@@ -800,7 +855,7 @@ function printEvalStats(evalPath: string) {
   console.log(`- Completed generations: ${summary.completedGenerations}`);
   console.log(`- Parse errors: ${summary.parseErrors}`);
   console.log(`- Generation errors: ${summary.generationErrors}`);
-  console.log(`- Benchmark violations: ${summary.totalFindings}`);
+  console.log(`- Reported findings: ${summary.totalFindings}`);
   console.log('');
   console.log('### Findings By Rule');
   console.log('');
@@ -823,7 +878,7 @@ function printEvalStats(evalPath: string) {
   console.log(`    Completed generations & ${summary.completedGenerations} \\\\`);
   console.log(`    Parse errors & ${summary.parseErrors} \\\\`);
   console.log(`    Generation errors & ${summary.generationErrors} \\\\`);
-  console.log(`    Benchmark violations & ${summary.totalFindings} \\\\`);
+  console.log(`    Reported findings & ${summary.totalFindings} \\\\`);
   console.log('```');
 }
 
@@ -838,11 +893,13 @@ function printRepairStats(repairEvalPath: string) {
   console.log(`- Attempted repairs: ${summary.attempted}`);
   console.log(`- Skipped generation errors: ${summary.skippedGenerationErrors}`);
   console.log(`- Maximum repair turns: ${summary.maxRepairTurns}`);
-  console.log(`- Baseline benchmark violations: ${summary.baselineFindings}`);
-  console.log(`- Final benchmark violations: ${summary.finalFindings}`);
+  console.log(`- Baseline reported findings: ${summary.baselineFindings}`);
+  console.log(`- Final reported findings: ${summary.finalFindings}`);
   console.log(
-    `- Violations fixed: ${summary.fixedFindings} (${formatPercent(summary.fixedFindings, summary.baselineFindings)})`,
+    `- Net finding reduction: ${summary.netReducedFindings} (${formatPercent(summary.netReducedFindings, summary.baselineFindings)})`,
   );
+  console.log(`- Rule-level findings resolved: ${summary.resolvedRuleFindings}`);
+  console.log(`- Rule-level findings introduced: ${summary.introducedRuleFindings}`);
   console.log(`- Baseline parse errors: ${summary.baselineParseErrors}`);
   console.log(`- Final parse errors: ${summary.finalParseErrors}`);
   console.log(`- Clean after one turn: ${summary.cleanAfterOne}`);
