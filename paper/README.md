@@ -97,7 +97,7 @@ attach it to a tagged release before citing the numbers.
 - Human labels for whether each finding is a valid, invalid, or ambiguous violation.
 - Missed-defect labels for recall, when an independently reviewed corpus is available.
 - TypeScript, framework build, web preview, mobile simulator/device preview, and runtime outcomes.
-- Repair iteration counts after lint feedback.
+- Diagnostic-compliance outcomes after lint feedback: fixed violations, turns to a clean lint state, new violations, parse errors, and repair iteration counts.
 
 ## Prompt Grid
 

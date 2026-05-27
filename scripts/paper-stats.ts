@@ -735,7 +735,7 @@ function renderRepairLatexTables(repairEvalPath: string) {
   lines.push('    \\bottomrule');
   lines.push('  \\end{tabular}');
   lines.push(
-    '  \\caption{Repair-loop pilot over the expanded grid. Each attempted repair feeds laint diagnostics back to the same model for up to three turns.}',
+    '  \\caption{Diagnostic-compliance repair-loop pilot over the expanded grid. Each attempted repair feeds laint diagnostics back to the same model for up to three turns.}',
   );
   lines.push('  \\label{tab:repair-summary}');
   lines.push('\\end{table}');
@@ -758,7 +758,7 @@ function renderRepairLatexTables(repairEvalPath: string) {
   lines.push('    \\bottomrule');
   lines.push('  \\end{tabular}');
   lines.push(
-    '  \\caption{Repair-loop outcomes by model, excluding baseline generation failures. Average turns is computed over runs that reached zero findings and no parse error.}',
+    '  \\caption{Diagnostic-compliance outcomes by model, excluding baseline generation failures. Average turns is computed over runs that reached zero findings and no parse error.}',
   );
   lines.push('  \\label{tab:repair-by-model}');
   lines.push('\\end{table}');
@@ -780,7 +780,7 @@ function renderRepairLatexTables(repairEvalPath: string) {
   }
   lines.push('    \\bottomrule');
   lines.push('  \\end{tabular}');
-  lines.push('  \\caption{Repair-loop outcomes by prompt and platform.}');
+  lines.push('  \\caption{Diagnostic-compliance outcomes by prompt and platform.}');
   lines.push('  \\label{tab:repair-by-prompt}');
   lines.push('\\end{table}');
 
