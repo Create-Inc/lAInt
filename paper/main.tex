@@ -183,28 +183,13 @@ As an initial small-scale evaluation, we ran six prompts across three models: \t
 \end{table}
 
 \paragraph{Expanded grid.}
-We then ran a larger raw grid over the same six prompts and seven configured model aliases. The run artifact is included with the paper source and can be summarized with \texttt{npm run paper:stats}. The expanded run produced 476 benchmark violations across 42 grid slots. Thirty-six generations completed, two completed generations had parse errors, and all six generation errors came from \texttt{moonshot-kimi-k2.6} due provider authentication or network failures. Table~\ref{tab:expanded-grid} summarizes the raw run.
+We then ran a larger raw grid over the same six prompts and seven configured model aliases. The run artifact is included with the paper source, and the following tables are generated from it by \texttt{npm run paper:tables}. Table~\ref{tab:expanded-grid} gives the overall run shape; Tables~\ref{tab:expanded-by-model}--\ref{tab:expanded-grid-matrix} break the same run down by model, prompt, rule, and prompt-model pair.
 
-\begin{table}[ht]
-  \centering
-  \begin{tabular}{lr}
-    \toprule
-    Metric & Value \\
-    \midrule
-    Prompts & 6 \\
-    Model aliases & 7 \\
-    Grid slots & 42 \\
-    Completed generations & 36 \\
-    Parse errors & 2 \\
-    Generation errors & 6 \\
-    Benchmark violations & 476 \\
-    \bottomrule
-  \end{tabular}
-  \caption{Expanded raw prompt-to-code benchmark run before detector-quality labeling.}
-  \label{tab:expanded-grid}
-\end{table}
+\input{generated/full-grid-tables.tex}
 
-The most frequent benchmark violations in the expanded run were \texttt{no-inline-styles} (102), \texttt{no-silent-skip} (87), \texttt{no-type-assertion} (64), \texttt{no-emoji-icons} (37), and \texttt{no-optional-props} (29). Finding counts differed substantially by working model: \texttt{anthropic-sonnet-4.6} produced 127 findings, \texttt{anthropic-opus-4.6} produced 123, \texttt{openai-gpt-5.5} produced 78, \texttt{openai-gpt-5.4} produced 59, \texttt{google-3.1-pro} produced 47, and \texttt{google-2.5-flash} produced 42. Because \texttt{moonshot-kimi-k2.6} failed to generate code for all prompts, it should be treated as an infrastructure failure in this run rather than as a model-quality score. These counts are already meaningful as benchmark scores because the rules encode expert-selected defect classes. They are also descriptive signals about model style: a violation histogram can expose recurring generation habits, not just aggregate quality. The next step is to label the findings as valid, invalid, or ambiguous to estimate detector precision and report rule-level noise. A recall estimate additionally requires reviewing generated files for true defect instances that laint did not report; once both precision and recall are available, the same labels can produce F1 or another F-score.
+The expanded tables make the raw benchmark results easier to inspect than a single aggregate count. First, violations are concentrated: the twelve most frequent rules account for 422 of 476 findings, or 88.7\% of the run. The largest buckets are not obscure compiler failures; they are recurring generated-code habits such as inline styles, silent branches, type assertions, emoji icons, and optional prop shapes. Second, model behavior differs substantially even before detector-quality labeling. The two Anthropic aliases produce the highest raw finding counts per linted run, while the Google aliases produce fewer reported violations but also include one parse failure for \texttt{google-2.5-flash}. Third, task shape matters: the two web prompts produce the largest prompt-level finding totals, while the backend prompts have fewer laint findings but still expose parse and reliability failures.
+
+These counts are benchmark scores because the rules encode expert-selected defect classes, but they are still raw detector outputs. The next step is to label findings as valid, invalid, or ambiguous to estimate detector precision and report rule-level noise. A recall estimate additionally requires reviewing generated files for true defect instances that laint did not report; once both precision and recall are available, the same labels can produce F1 or another F-score. Because \texttt{moonshot-kimi-k2.6} failed to generate code for all prompts, it should be treated as an infrastructure failure in this run rather than as a model-quality score.
 
 A fuller benchmark should answer four model-evaluation questions.
 
@@ -244,7 +229,7 @@ The system is also related to work on language models for code and tool-augmente
 
 \section{Conclusion}
 
-Agent-generated applications need feedback loops that catch framework-specific defects before they become preview or runtime failures. Laint demonstrates a lightweight approach: encode recurring generated-app failures as repairable JSX/TSX lint rules, tag them by platform, and run them automatically after agent edits. The same expert-curated rule corpus defines a benchmark for language models: prompt models to generate applications, count benchmark violations, estimate detector precision, recall, and F-score on model outputs, and compare defect patterns and repair success across models. The current 55-rule implementation suggests that many high-value checks are small, file-local, and operationally grounded. The next step is to complete detector-quality labeling for the preliminary model grid and report model-level benchmark results.
+Agent-generated applications need feedback loops that catch framework-specific defects before they become preview or runtime failures. Laint demonstrates a lightweight approach: encode recurring generated-app failures as repairable JSX/TSX lint rules, tag them by platform, and run them automatically after agent edits. The same expert-curated rule corpus defines a benchmark for language models: prompt models to generate applications, count benchmark violations, estimate detector precision, recall, and F-score on model outputs, and compare defect patterns and repair success across models. The current 55-rule implementation suggests that many high-value checks are small, file-local, and operationally grounded. The next step is to complete detector-quality labeling for the expanded model grid and report labeled model-level benchmark results.
 
 \bibliographystyle{plain}
 \bibliography{references}

@@ -59,6 +59,16 @@ There is also a larger raw grid artifact at
 npm run paper:stats -- --eval paper/eval/artifacts/full-grid-2026-05-17/results.json
 ```
 
+The expanded-grid tables included by `main.tex` are generated from that artifact:
+
+```bash
+npm run paper:tables
+```
+
+This rewrites `paper/generated/full-grid-tables.tex`, which is checked in so the
+paper source can build directly while still keeping the table values
+reproducible from the archived JSON artifact.
+
 This raw run covers 6 prompts and 7 configured model aliases. Moonshot/Kimi failed
 all 6 generations due provider authentication/network errors, so use this
 artifact as raw evidence rather than final paper numbers until the Moonshot

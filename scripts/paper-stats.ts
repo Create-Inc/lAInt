@@ -1,5 +1,5 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { basename } from 'node:path';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { basename, dirname } from 'node:path';
 import { ruleMeta } from '../src/rules/index';
 
 const PAPER_CATEGORY_ORDER = [
@@ -19,8 +19,9 @@ const PAPER_CATEGORY_ORDER = [
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const options: { evalPath: string | null } = {
+  const options: { evalPath: string | null; latexOut: string | null } = {
     evalPath: null,
+    latexOut: null,
   };
 
   for (let index = 0; index < args.length; index += 1) {
@@ -29,6 +30,9 @@ function parseArgs() {
 
     if (arg === '--eval' && next) {
       options.evalPath = next;
+      index += 1;
+    } else if (arg === '--latex-out' && next) {
+      options.latexOut = next;
       index += 1;
     } else if (arg === '--help') {
       printHelp();
@@ -46,10 +50,13 @@ function printHelp() {
 
 Options:
   --eval <path>   Include prompt-grid stats from a results.json artifact.
+  --latex-out <path>
+                  Write generated LaTeX tables for the prompt-grid artifact.
 
 Examples:
   npm run paper:stats
   npm run paper:stats -- --eval paper/eval/artifacts/initial-grid/results.json
+  npm run paper:stats -- --eval paper/eval/artifacts/full-grid-2026-05-17/results.json --latex-out paper/generated/full-grid-tables.tex
 `);
 }
 
@@ -133,6 +140,80 @@ function getArray(value: unknown) {
   return Array.isArray(value) ? value : [];
 }
 
+function getBoolean(value: unknown) {
+  return typeof value === 'boolean' ? value : Boolean(value);
+}
+
+type RunStats = {
+  gridSlots: number;
+  completedGenerations: number;
+  lintedRuns: number;
+  parseErrors: number;
+  generationErrors: number;
+  findings: number;
+  platform: string | null;
+};
+
+type MatrixCell = {
+  findings: number;
+  parseError: boolean;
+  generationError: boolean;
+};
+
+function emptyRunStats(platform: string | null): RunStats {
+  return {
+    gridSlots: 0,
+    completedGenerations: 0,
+    lintedRuns: 0,
+    parseErrors: 0,
+    generationErrors: 0,
+    findings: 0,
+    platform,
+  };
+}
+
+function addRecordStats({
+  stats,
+  findings,
+  parseError,
+  generationError,
+}: {
+  stats: RunStats;
+  findings: number;
+  parseError: boolean;
+  generationError: boolean;
+}) {
+  stats.gridSlots += 1;
+  stats.findings += findings;
+  if (parseError) {
+    stats.parseErrors += 1;
+  }
+  if (generationError) {
+    stats.generationErrors += 1;
+    return;
+  }
+  stats.completedGenerations += 1;
+  if (!parseError) {
+    stats.lintedRuns += 1;
+  }
+}
+
+function rememberOrderedValue({
+  values,
+  seen,
+  value,
+}: {
+  values: string[];
+  seen: Set<string>;
+  value: string;
+}) {
+  if (seen.has(value)) {
+    return;
+  }
+  values.push(value);
+  seen.add(value);
+}
+
 function summarizeEvalArtifact(evalPath: string) {
   const parsed: unknown = JSON.parse(readFileSync(evalPath, 'utf8'));
   if (!isObject(parsed)) {
@@ -144,6 +225,13 @@ function summarizeEvalArtifact(evalPath: string) {
   const modelAliases = new Set<string>();
   const byRule = new Map<string, number>();
   const byModel = new Map<string, number>();
+  const byModelStats = new Map<string, RunStats>();
+  const byPromptStats = new Map<string, RunStats>();
+  const promptOrder: string[] = [];
+  const modelOrder: string[] = [];
+  const seenPrompts = new Set<string>();
+  const seenModels = new Set<string>();
+  const matrix = new Map<string, Map<string, MatrixCell>>();
   let totalFindings = 0;
   let parseErrors = 0;
   let generationErrors = 0;
@@ -155,21 +243,49 @@ function summarizeEvalArtifact(evalPath: string) {
 
     const prompt = isObject(record.prompt) ? record.prompt : {};
     const model = isObject(record.model) ? record.model : {};
-    const promptId = getString(prompt.id);
-    const modelAlias = getString(model.alias);
+    const promptId = getString(prompt.id) ?? 'unknown-prompt';
+    const promptPlatform = getString(prompt.platform);
+    const modelAlias = getString(model.alias) ?? 'unknown-model';
     const lintResults = getArray(record.lintResults);
+    const parseError = getBoolean(record.parseError);
+    const generationError = getBoolean(record.generationError);
 
-    if (promptId) {
-      promptIds.add(promptId);
-    }
-    if (modelAlias) {
-      modelAliases.add(modelAlias);
-      byModel.set(modelAlias, (byModel.get(modelAlias) ?? 0) + lintResults.length);
-    }
-    if (record.parseError) {
+    promptIds.add(promptId);
+    rememberOrderedValue({ values: promptOrder, seen: seenPrompts, value: promptId });
+    modelAliases.add(modelAlias);
+    rememberOrderedValue({ values: modelOrder, seen: seenModels, value: modelAlias });
+    byModel.set(modelAlias, (byModel.get(modelAlias) ?? 0) + lintResults.length);
+
+    const modelStats = byModelStats.get(modelAlias) ?? emptyRunStats(null);
+    byModelStats.set(modelAlias, modelStats);
+    addRecordStats({
+      stats: modelStats,
+      findings: lintResults.length,
+      parseError,
+      generationError,
+    });
+
+    const promptStats = byPromptStats.get(promptId) ?? emptyRunStats(promptPlatform);
+    byPromptStats.set(promptId, promptStats);
+    addRecordStats({
+      stats: promptStats,
+      findings: lintResults.length,
+      parseError,
+      generationError,
+    });
+
+    const promptCells = matrix.get(promptId) ?? new Map<string, MatrixCell>();
+    matrix.set(promptId, promptCells);
+    promptCells.set(modelAlias, {
+      findings: lintResults.length,
+      parseError,
+      generationError,
+    });
+
+    if (parseError) {
       parseErrors += 1;
     }
-    if (record.generationError) {
+    if (generationError) {
       generationErrors += 1;
     }
 
@@ -198,7 +314,221 @@ function summarizeEvalArtifact(evalPath: string) {
     totalFindings,
     byRule: [...byRule.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])),
     byModel: [...byModel.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])),
+    byModelStats: [...byModelStats.entries()].sort(
+      (a, b) => b[1].findings - a[1].findings || a[0].localeCompare(b[0]),
+    ),
+    byPromptStats: [...byPromptStats.entries()].sort(
+      (a, b) => b[1].findings - a[1].findings || a[0].localeCompare(b[0]),
+    ),
+    promptOrder,
+    modelOrder,
+    matrix,
   };
+}
+
+function latexEscape(value: string) {
+  return value.replace(/[&%$#_{}~^\\]/g, (char) => {
+    switch (char) {
+      case '&':
+        return '\\&';
+      case '%':
+        return '\\%';
+      case '$':
+        return '\\$';
+      case '#':
+        return '\\#';
+      case '_':
+        return '\\_';
+      case '{':
+        return '\\{';
+      case '}':
+        return '\\}';
+      case '~':
+        return '\\textasciitilde{}';
+      case '^':
+        return '\\textasciicircum{}';
+      case '\\':
+        return '\\textbackslash{}';
+      default:
+        return char;
+    }
+  });
+}
+
+function latexTexttt(value: string) {
+  return `\\texttt{${latexEscape(value)}}`;
+}
+
+function formatPercent(count: number, total: number) {
+  if (total === 0) {
+    return '$--$';
+  }
+  return `${((count / total) * 100).toFixed(1)}\\%`;
+}
+
+function formatRate(count: number, denominator: number) {
+  if (denominator === 0) {
+    return '$--$';
+  }
+  return (count / denominator).toFixed(1);
+}
+
+function displayModelAlias(alias: string) {
+  switch (alias) {
+    case 'openai-gpt-5.5':
+      return 'GPT-5.5';
+    case 'openai-gpt-5.4':
+      return 'GPT-5.4';
+    case 'anthropic-sonnet-4.6':
+      return 'Sonnet 4.6';
+    case 'anthropic-opus-4.6':
+      return 'Opus 4.6';
+    case 'google-3.1-pro':
+      return 'G-3.1-Pro';
+    case 'google-2.5-flash':
+      return 'G-2.5-Flash';
+    case 'moonshot-kimi-k2.6':
+      return 'Kimi K2.6';
+    default:
+      return alias;
+  }
+}
+
+function renderLatexTables(evalPath: string) {
+  const summary = summarizeEvalArtifact(evalPath);
+  const topRules = summary.byRule.slice(0, 12);
+  const topRuleCount = topRules.reduce((sum, [, count]) => sum + count, 0);
+  const otherRuleCount = summary.totalFindings - topRuleCount;
+  const lines: string[] = [];
+
+  lines.push('% Generated by npm run paper:tables.');
+  lines.push(`% Source artifact: ${evalPath}`);
+  lines.push('');
+  lines.push('\\begin{table}[ht]');
+  lines.push('  \\centering');
+  lines.push('  \\begin{tabular}{lr}');
+  lines.push('    \\toprule');
+  lines.push('    Metric & Value \\\\');
+  lines.push('    \\midrule');
+  lines.push(`    Prompts & ${summary.prompts} \\\\`);
+  lines.push(`    Model aliases & ${summary.models} \\\\`);
+  lines.push(`    Grid slots & ${summary.gridSlots} \\\\`);
+  lines.push(`    Completed generations & ${summary.completedGenerations} \\\\`);
+  lines.push(`    Parse errors & ${summary.parseErrors} \\\\`);
+  lines.push(`    Generation errors & ${summary.generationErrors} \\\\`);
+  lines.push(`    Benchmark violations & ${summary.totalFindings} \\\\`);
+  lines.push('    \\bottomrule');
+  lines.push('  \\end{tabular}');
+  lines.push(
+    '  \\caption{Expanded raw prompt-to-code benchmark run before detector-quality labeling.}',
+  );
+  lines.push('  \\label{tab:expanded-grid}');
+  lines.push('\\end{table}');
+  lines.push('');
+  lines.push('\\begin{table}[ht]');
+  lines.push('  \\centering');
+  lines.push('  \\small');
+  lines.push('  \\begin{tabular}{lrrrrr}');
+  lines.push('    \\toprule');
+  lines.push(
+    '    Model alias & Linted runs & Parse errors & Gen. errors & Findings & Findings/linted \\\\',
+  );
+  lines.push('    \\midrule');
+  for (const [modelAlias, stats] of summary.byModelStats) {
+    lines.push(
+      `    ${latexTexttt(modelAlias)} & ${stats.lintedRuns} & ${stats.parseErrors} & ${stats.generationErrors} & ${stats.findings} & ${formatRate(stats.findings, stats.lintedRuns)} \\\\`,
+    );
+  }
+  lines.push('    \\bottomrule');
+  lines.push('  \\end{tabular}');
+  lines.push(
+    '  \\caption{Expanded-grid findings by model. Linted runs exclude generation failures and parse failures.}',
+  );
+  lines.push('  \\label{tab:expanded-by-model}');
+  lines.push('\\end{table}');
+  lines.push('');
+  lines.push('\\begin{table}[ht]');
+  lines.push('  \\centering');
+  lines.push('  \\small');
+  lines.push('  \\begin{tabular}{llrrrr}');
+  lines.push('    \\toprule');
+  lines.push('    Prompt & Platform & Linted runs & Parse errors & Gen. errors & Findings \\\\');
+  lines.push('    \\midrule');
+  for (const [promptId, stats] of summary.byPromptStats) {
+    lines.push(
+      `    ${latexTexttt(promptId)} & ${latexEscape(stats.platform ?? 'unknown')} & ${stats.lintedRuns} & ${stats.parseErrors} & ${stats.generationErrors} & ${stats.findings} \\\\`,
+    );
+  }
+  lines.push('    \\bottomrule');
+  lines.push('  \\end{tabular}');
+  lines.push('  \\caption{Expanded-grid findings by prompt and target platform.}');
+  lines.push('  \\label{tab:expanded-by-prompt}');
+  lines.push('\\end{table}');
+  lines.push('');
+  lines.push('\\begin{table}[ht]');
+  lines.push('  \\centering');
+  lines.push('  \\scriptsize');
+  lines.push('  \\begin{tabular}{llrr}');
+  lines.push('    \\toprule');
+  lines.push('    Rule & Category & Findings & Share \\\\');
+  lines.push('    \\midrule');
+  for (const [rule, count] of topRules) {
+    const category = ruleMeta[rule]?.category ?? 'Unknown';
+    lines.push(
+      `    ${latexTexttt(rule)} & ${latexEscape(category)} & ${count} & ${formatPercent(count, summary.totalFindings)} \\\\`,
+    );
+  }
+  if (otherRuleCount > 0) {
+    lines.push(
+      `    Other rules & -- & ${otherRuleCount} & ${formatPercent(otherRuleCount, summary.totalFindings)} \\\\`,
+    );
+  }
+  lines.push('    \\bottomrule');
+  lines.push('  \\end{tabular}');
+  lines.push(
+    '  \\caption{Most frequent expanded-grid benchmark violations by rule. The top twelve rules account for most raw findings.}',
+  );
+  lines.push('  \\label{tab:expanded-by-rule}');
+  lines.push('\\end{table}');
+  lines.push('');
+  lines.push('\\begin{table}[ht]');
+  lines.push('  \\centering');
+  lines.push('  \\scriptsize');
+  lines.push('  \\begingroup');
+  lines.push('  \\setlength{\\tabcolsep}{3pt}');
+  lines.push(`  \\begin{tabular}{l${'r'.repeat(summary.modelOrder.length)}}`);
+  lines.push('    \\toprule');
+  lines.push(
+    `    Prompt & ${summary.modelOrder.map((modelAlias) => latexEscape(displayModelAlias(modelAlias))).join(' & ')} \\\\`,
+  );
+  lines.push('    \\midrule');
+  for (const promptId of summary.promptOrder) {
+    const cells = summary.matrix.get(promptId);
+    const cellValues = summary.modelOrder.map((modelAlias) => {
+      const cell = cells?.get(modelAlias);
+      if (!cell) {
+        return '$--$';
+      }
+      if (cell.generationError) {
+        return 'G';
+      }
+      if (cell.parseError) {
+        return 'P';
+      }
+      return String(cell.findings);
+    });
+    lines.push(`    ${latexTexttt(promptId)} & ${cellValues.join(' & ')} \\\\`);
+  }
+  lines.push('    \\bottomrule');
+  lines.push('  \\end{tabular}');
+  lines.push('  \\endgroup');
+  lines.push(
+    '  \\caption{Run-level expanded-grid finding counts. P denotes a generated file that failed parsing; G denotes a generation failure.}',
+  );
+  lines.push('  \\label{tab:expanded-grid-matrix}');
+  lines.push('\\end{table}');
+
+  return lines.join('\n') + '\n';
 }
 
 function printEvalStats(evalPath: string) {
@@ -245,4 +575,10 @@ const options = parseArgs();
 printRuleStats();
 if (options.evalPath) {
   printEvalStats(options.evalPath);
+  if (options.latexOut) {
+    mkdirSync(dirname(options.latexOut), { recursive: true });
+    writeFileSync(options.latexOut, renderLatexTables(options.evalPath));
+    console.log('');
+    console.log(`Wrote LaTeX tables to ${options.latexOut}`);
+  }
 }

@@ -23,6 +23,7 @@
     "format:check": "prettier --check .",
     "eval:prompt-grid": "npm run build && tsx scripts/run-prompt-grid-eval.ts",
     "paper:stats": "tsx scripts/paper-stats.ts",
+    "paper:tables": "tsx scripts/paper-stats.ts --eval paper/eval/artifacts/full-grid-2026-05-17/results.json --latex-out paper/generated/full-grid-tables.tex",
     "sync": "tsx scripts/sync.ts",
     "sync:check": "tsx scripts/sync.ts && git diff --exit-code -- src/rules/index.ts README.md"
   },
