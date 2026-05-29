@@ -71,10 +71,10 @@ source can build directly while still keeping the table values reproducible from
 the archived JSON artifacts.
 
 This raw run covers 6 prompts and 7 configured model aliases. Moonshot/Kimi failed
-all 6 generations due provider authentication/network errors, so use this
-artifact as raw evidence rather than final paper numbers until the Moonshot
-credential path is fixed or the reported model grid is explicitly scoped to the
-6 working model aliases.
+all 6 generations due provider authentication errors, so the paper scopes model
+comparisons to the 6 working aliases and keeps the Kimi rows only as
+infrastructure-failure evidence. A scored Kimi comparison should rerun the grid
+after the Moonshot credential path is fixed.
 
 The repair-loop pilot uses the full-grid artifact as its baseline and is archived
 at `paper/eval/artifacts/repair-loop-2026-05-27/results.json`. The archived JSON

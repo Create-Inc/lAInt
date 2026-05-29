@@ -52,7 +52,7 @@ This paper makes three contributions:
 
 Generated applications fail in ways that reflect both the target framework and the generator's learned habits. In internal use, many defects were not exotic compiler problems. They were small but consequential choices: using a browser API in a server-rendered module, importing React Native primitives into a web project, omitting a \texttt{response.ok} check, using unsupported animation patterns, or forgetting an Expo-specific layout guard. These problems are easy to fix once identified, but expensive when discovered only after preview, deployment, or user interaction.
 
-Traditional lint rules can catch some of these issues, especially generic JavaScript and React anti-patterns. The gap is that generated applications combine multiple fast-moving platform contracts: rules imposed by frameworks, deployment targets, and device runtimes that generated code must obey. Mobile contracts are especially easy to miss because a browser-only preview does not exercise native layout, navigation, or device-input behavior. A rule can be valuable even when it is too product-specific, framework-specific, or generation-specific to belong in a general-purpose lint preset. Agent-oriented linting treats such specificity as a feature: if a rule captures a recurring generated-app defect and produces a reliable repair signal, it is worth encoding.
+Traditional lint rules can catch some of these issues, especially generic JavaScript and React anti-patterns. The gap is that generated applications combine multiple fast-moving platform contracts: rules imposed by frameworks, deployment targets, and device runtimes that generated code must obey. Mobile contracts are especially easy to miss because a browser-only preview does not exercise native layout, navigation, or device-input behavior. In principle, many of these checks could be implemented as custom ESLint rules. Laint's narrower claim is operational: it packages generated-app-specific checks as a small, platform-profiled tool that can run immediately on edited files and return structured repair feedback without requiring a full project lint configuration or a slower build. Agent-oriented linting treats such specificity as a feature: if a rule captures a recurring generated-app defect and produces a reliable repair signal, it is worth encoding.
 
 \section{System Design}
 
@@ -68,16 +68,13 @@ Laint exposes three interfaces:
   \item an agent hook, a small integration point that runs after file edits and feeds findings back to the coding agent.
 \end{itemize}
 
-The hook interface is important because it shifts linting from a terminal command a human remembers to run into an automatic part of the agent's edit loop. A finding is not merely a report; it becomes a prompt for the next repair action.
+The hook interface is important because it moves feedback closer to the model action that introduced the defect. Instead of waiting for a later lint, build, preview, or runtime step, the agent receives the finding immediately after the edit and can repair while the local context is still fresh. A finding is not merely a report; it becomes a prompt for the next repair action.
 
 \section{Rule Taxonomy}
 
 The current laint implementation contains 55 rules and 59 test files. Table~\ref{tab:categories} summarizes the rule corpus by category. These categories are taken from the \texttt{category} field in each rule's metadata rather than assigned after the fact for the paper. The corpus contains 15 error-level rules and 40 warning-level rules. Seventeen rules are universal, while the remaining rules target Expo, web, backend, or a combination of platforms.
 
-\paragraph{Version pinning.}
-All rule counts and reported benchmark artifacts in this paper are tied to a fixed repository state: \texttt{main} commit \texttt{6a60a0295955ee6cc1d639c88955ea50722e3516}, dated 2026-05-14. The counts are reproducible from checked-in repository artifacts using the \texttt{paper:stats} script documented with the paper source, and the archived run artifacts include metadata for the runner, prompt IDs, model aliases, model IDs, and token or repair-turn limits. Future benchmark reports should cite either an immutable commit hash or a purpose-named git tag so that later rule additions, rule rewrites, or prompt-suite changes do not change the meaning of previously reported results.
-
-\begin{table}[ht]
+\begin{table}[!ht]
   \centering
   \begin{tabular}{lr}
     \toprule
@@ -101,6 +98,11 @@ All rule counts and reported benchmark artifacts in this paper are tied to a fix
   \label{tab:categories}
 \end{table}
 
+\FloatBarrier
+
+\paragraph{Version pinning.}
+All rule counts and reported benchmark artifacts in this paper are tied to a fixed repository state: \texttt{main} commit \texttt{6a60a0295955ee6cc1d639c88955ea50722e3516}, dated 2026-05-14. The counts are reproducible from checked-in repository artifacts using the \texttt{paper:stats} script documented with the paper source, and the archived run artifacts include metadata for the runner, prompt IDs, model aliases, model IDs, and token or repair-turn limits. This pin is primarily for citation and follow-up work: later papers or benchmark updates should cite either an immutable commit hash or a purpose-named git tag so that later rule additions, rule rewrites, or prompt-suite changes do not change the meaning of previously reported results.
+
 The categories reflect several distinct failure modes. The ``Liquid Glass'' category refers to rules for Expo glass-effect components, such as requiring availability fallbacks and avoiding style combinations that break the effect.
 
 \paragraph{Rendering and hydration.}
@@ -111,6 +113,8 @@ Mobile and platform-compatibility rules prevent generated code from mixing incom
 
 \paragraph{Framework conventions.}
 Expo~\cite{expo}, Next.js~\cite{nextjs}, Tailwind, and screen-transition rules encode conventions that are not always enforced by the compiler. Examples include absolute route paths, tab header configuration, animation worklet directives, transition progress ranges, shared-transition tag matching, and animation class restrictions. These are not arbitrary style preferences; they are small framework contracts that generated code often violates while still remaining valid TypeScript.
+
+Encoding these contracts as rules also changes the token economics of the repair loop. An agent could search documentation or retrieve framework examples after every failure, but that is nondeterministic, token-intensive, and often too broad for the local edit. A laint diagnostic compresses the relevant convention into a deterministic, file-local signal that can be fed back to the model directly.
 
 \paragraph{Runtime robustness.}
 Backend and error-handling rules target defects that often pass static type checks: missing \texttt{response.ok} checks, synchronous filesystem calls, nested SQL template calls, unrestricted loops in serverless functions with execution time limits, missing structured error fields, and unsafe JSON parsing.
@@ -192,7 +196,7 @@ We then ran a larger raw grid over the same six prompts and seven configured mod
 
 The expanded tables make the raw benchmark results easier to inspect than a single aggregate count. First, findings are concentrated: the twelve most frequent rules account for 422 of 476 findings, or 88.7\% of the run. The largest buckets are not obscure compiler failures; they are recurring generated-code habits such as inline styles, silent branches, type assertions, emoji icons, and optional prop shapes. Second, model behavior differs substantially even before detector-quality labeling. The two Anthropic aliases produce the highest raw finding counts per linted run, while the Google aliases produce fewer reported findings but also include one parse failure for \texttt{google-2.5-flash}. That failure should be read partly as an output-budget/truncation case: the recorded finish reason was \texttt{length}, with 11,996 completion tokens. Third, task shape matters: the two web prompts produce the largest prompt-level finding totals, while the backend prompts have fewer laint findings but still expose parse and reliability failures.
 
-These counts are raw benchmark signals because the rules encode expert-selected defect classes, but they are not yet validated defect rates. The next step is to label findings as valid, invalid, or ambiguous to estimate detector precision and report rule-level noise. A recall estimate additionally requires reviewing generated files for true defect instances that laint did not report; once both precision and recall are available, the same labels can produce F1 or another F-score. Because \texttt{moonshot-kimi-k2.6} failed to generate code for all prompts, it should be treated as an infrastructure failure in this run rather than as a model-quality score.
+These counts are raw benchmark signals because the rules encode expert-selected defect classes, but they are not yet validated defect rates. The next step is to label findings as valid, invalid, or ambiguous to estimate detector precision and report rule-level noise. A recall estimate additionally requires reviewing generated files for true defect instances that laint did not report; once both precision and recall are available, the same labels can produce F1 or another F-score. The configured \texttt{moonshot-kimi-k2.6} alias failed all six generations because of provider authentication, so it is retained in the artifact as an infrastructure failure but excluded from model-quality comparisons. A scored Kimi comparison requires rerunning the grid after the credential path is fixed.
 
 \paragraph{Diagnostic-compliance pilot.}
 We also ran a repair-loop pilot on the same expanded-grid outputs. For each completed baseline generation, we fed the current code and laint diagnostics back to the same model and asked for a revised complete file. We repeated this for up to three turns, stopping early when the file had zero laint findings and no parse error. We interpret this as a diagnostic-compliance measurement: the model is being tested on whether it can follow localized static feedback, not merely whether it can generate a plausible file from the original task prompt. This pilot does not replay the exact CLI hook or a full autonomous coding-agent loop; it tests the same diagnostic content in a direct repair prompt. Table~\ref{tab:repair-summary} summarizes the repair loop; Tables~\ref{tab:repair-by-model} and~\ref{tab:repair-by-prompt} break the same run down by model and prompt.
