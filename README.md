@@ -117,7 +117,7 @@ const webRules = getRulesForPlatform('web');
 const backendRules = getRulesForPlatform('backend');
 ```
 
-## Available Rules (55 total)
+## Available Rules (56 total)
 
 <!-- AUTOGEN:RULES — managed by scripts/sync.ts; run `npm run sync` to update. -->
 
@@ -163,14 +163,15 @@ const backendRules = getRulesForPlatform('backend');
 
 ### React / JSX Rules
 
-| Rule                         | Severity | Platform     | Description                                   |
-| ---------------------------- | -------- | ------------ | --------------------------------------------- |
-| `browser-api-in-useeffect`   | warning  | web          | window/localStorage only in useEffect for SSR |
-| `fetch-response-ok-check`    | warning  | web, backend | Check response.ok when using fetch            |
-| `no-class-components`        | warning  | expo, web    | Use function components with hooks            |
-| `no-complex-jsx-expressions` | warning  | expo, web    | Avoid IIFEs and complex expressions in JSX    |
-| `no-inline-script-code`      | error    | web          | Script tags should use template literals      |
-| `no-react-query-missing`     | warning  | expo, web    | Use @tanstack/react-query for data fetching   |
+| Rule                         | Severity | Platform     | Description                                                                 |
+| ---------------------------- | -------- | ------------ | --------------------------------------------------------------------------- |
+| `browser-api-in-useeffect`   | warning  | web          | window/localStorage only in useEffect for SSR                               |
+| `fetch-response-ok-check`    | warning  | web, backend | Check response.ok when using fetch                                          |
+| `no-class-components`        | warning  | expo, web    | Use function components with hooks                                          |
+| `no-complex-jsx-expressions` | warning  | expo, web    | Avoid IIFEs and complex expressions in JSX                                  |
+| `no-empty-screen-component`  | error    | expo, web    | A default-exported screen/route component must render UI, not `return null` |
+| `no-inline-script-code`      | error    | web          | Script tags should use template literals                                    |
+| `no-react-query-missing`     | warning  | expo, web    | Use @tanstack/react-query for data fetching                                 |
 
 ### Screen Transitions Rules (react-native-screen-transitions)
 

@@ -28,6 +28,10 @@ import {
   meta as noComplexJsxExpressionsMeta,
 } from './no-complex-jsx-expressions';
 import { noEmojiIcons, meta as noEmojiIconsMeta } from './no-emoji-icons';
+import {
+  noEmptyScreenComponent,
+  meta as noEmptyScreenComponentMeta,
+} from './no-empty-screen-component';
 import { noInlineScriptCode, meta as noInlineScriptCodeMeta } from './no-inline-script-code';
 import { noInlineStyles, meta as noInlineStylesMeta } from './no-inline-styles';
 import { noLooseEquality, meta as noLooseEqualityMeta } from './no-loose-equality';
@@ -121,6 +125,7 @@ export const rules: Record<string, RuleFunction> = {
   'no-class-components': noClassComponents,
   'no-complex-jsx-expressions': noComplexJsxExpressions,
   'no-emoji-icons': noEmojiIcons,
+  'no-empty-screen-component': noEmptyScreenComponent,
   'no-inline-script-code': noInlineScriptCode,
   'no-inline-styles': noInlineStyles,
   'no-loose-equality': noLooseEquality,
@@ -179,6 +184,7 @@ export const ruleMeta: Record<string, RuleMeta> = {
   'no-class-components': noClassComponentsMeta,
   'no-complex-jsx-expressions': noComplexJsxExpressionsMeta,
   'no-emoji-icons': noEmojiIconsMeta,
+  'no-empty-screen-component': noEmptyScreenComponentMeta,
   'no-inline-script-code': noInlineScriptCodeMeta,
   'no-inline-styles': noInlineStylesMeta,
   'no-loose-equality': noLooseEqualityMeta,
